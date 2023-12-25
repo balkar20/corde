@@ -8,9 +8,8 @@ public class ClientSevice
 {
     public async Task Execute()
     {
-        var buffer = new BufferBlock<VehicleTypeProcessResult>();
-        
-        var typeProcessor = new VehicleTypeProcessor();
-        await typeProcessor.ProcessAsync(buffer);
+        // var buffer = new BufferBlock<VehicleTypeProcessResult>();
+        // var typeProcessor = new VehicleTypeProcessor();
+        // await typeProcessor.ProcessAsync(buffer);
     }
 }

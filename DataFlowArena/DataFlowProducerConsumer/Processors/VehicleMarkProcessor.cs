@@ -7,13 +7,13 @@ using DataFlowProducerConsumer.Services;
 
 namespace DataFlowProducerConsumer.Processors;
 
-public class VehicleTypeProcessor: Processor<Track, VehicleTypeProcessResult>
+public class VehicleMarkProcessor: Processor<Track, VehicleMarkProcessResult>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<VehicleTypeProcessResult> _analyserService;
+    private readonly IVehicleAnalyzerService<VehicleMarkProcessResult> _analyserService;
     private readonly IMapper _mapper;
 
-    public VehicleTypeProcessor(ISharedMemoryVehicleService sharedMemoryService)
+    public VehicleMarkProcessor(ISharedMemoryVehicleService sharedMemoryService)
     {
         _sharedMemoryService = sharedMemoryService;
     }
@@ -22,7 +22,7 @@ public class VehicleTypeProcessor: Processor<Track, VehicleTypeProcessResult>
     public bool CanRun { get; set; }
     public bool Completed { get; set; }
 
-    public override async Task<VehicleTypeProcessResult> ProcessLogic(Track inputData)
+    public override async Task<VehicleMarkProcessResult> ProcessLogic(Track inputData)
     {
         var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
         
@@ -36,9 +36,7 @@ public class VehicleTypeProcessor: Processor<Track, VehicleTypeProcessResult>
         
         var testVeh = new Vehicle();
         var typeAnaliseResult = await _analyserService.Analyse(testVeh);
-        VehicleTypeProcessResult result = _mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
-        _sharedMemoryService.VehicleTypeProcessResultDictionary.Add(inputData.TrackId, result);
-        return result;
+        return _mapper.Map<VehicleMarkProcessResult>(typeAnaliseResult);
     }
 
     // public async ValueTask<VehicleTypeProcessResult> ProcessAsync(Track inputData)

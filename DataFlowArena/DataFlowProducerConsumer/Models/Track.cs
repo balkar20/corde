@@ -1,3 +1,4 @@
+using System.Data;
 using System.Drawing;
 
 namespace DataFlowProducerConsumer.Models;
@@ -5,7 +6,9 @@ namespace DataFlowProducerConsumer.Models;
 public class Track
 {
     public string TrackId { get; set; }
-    public List<Point> Points { get; set; }
+    public Queue<FramePoint> Points { get; set; }
     public double AverageSpeed { get; set; }
+    public TimeFrame TimeFrame { get; set; }
+    public string VehicleNumber { get; set; }
     // public Queue<Frame> Frames { get; set; }
 }

@@ -1,6 +1,6 @@
 namespace DataFlowProducerConsumer.Models.Results;
 
-public class VehicleTypeProcessResult: IProcessResult
+public class VehicleColorStatisticsProcessResult: IProcessResult
 {
     public bool IsSucceed { get; set; }
     

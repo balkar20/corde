@@ -1,6 +1,6 @@
 namespace DataFlowProducerConsumer.Models.Results;
 
-public interface IProcessResult
+public class PoolProcessResult:IProcessResult
 {
     public bool IsSucceed { get; set; }
 }

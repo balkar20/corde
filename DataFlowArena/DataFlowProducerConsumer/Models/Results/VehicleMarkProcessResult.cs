@@ -1,6 +1,6 @@
 namespace DataFlowProducerConsumer.Models.Results;
 
-public class VehicleTypeProcessResult: IProcessResult
+public class VehicleMarkProcessResult: IProcessResult
 {
     public bool IsSucceed { get; set; }
     

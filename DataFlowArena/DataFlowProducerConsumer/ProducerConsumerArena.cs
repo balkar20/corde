@@ -4,9 +4,9 @@ namespace DataFlowProducerConsumer;
 
 public class ProducerConsumerArena
 {
-    public static void Produce(ITargetBlock<byte[]> target)
+    public static async Task Produce(ITargetBlock<byte[]> target)
     {
-        var rand = new Random();
+         var rand = new Random();
 
         for (int i = 0; i < 100; ++ i)
         {
@@ -22,8 +22,10 @@ public class ProducerConsumerArena
     {
         int bytesProcessed = 0;
 
-        while (await source.OutputAvailableAsync())
+        while (await source.OutputAvailableAsync())//Here we wait for Post WITH HIS OUTPUT
         {
+            //Here we in another thread
+            //AND NOW IT GIVE AS EVERY RESULT THAT WAS POSTED BEFORE IN Produce
             byte[] data = await source.ReceiveAsync();
             bytesProcessed += data.Length;
         }
