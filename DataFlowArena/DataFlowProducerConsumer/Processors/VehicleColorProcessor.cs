@@ -8,13 +8,13 @@ using DataFlowProducerConsumer.Services.Storage;
 
 namespace DataFlowProducerConsumer.Processors;
 
-public class VehicleTypeProcessor: Processor<Track>
+public class VehicleColorProcessor: Processor<Track>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<VehicleTypeProcessResult> _analyserService;
+    private readonly IVehicleAnalyzerService<VehicleColorStatisticsProcessResult> _analyserService;
     private readonly IMapper _mapper;
 
-    public VehicleTypeProcessor(ISharedMemoryVehicleService sharedMemoryService)
+    public VehicleColorProcessor(ISharedMemoryVehicleService sharedMemoryService)
     {
         _sharedMemoryService = sharedMemoryService;
     }
@@ -33,8 +33,14 @@ public class VehicleTypeProcessor: Processor<Track>
         
         var testVeh = new Vehicle();
         var typeAnaliseResult = await _analyserService.Analyse(testVeh);
-        VehicleTypeProcessResult result = _mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
-        _sharedMemoryService.VehicleTypeProcessResultDictionary.Add(inputData.TrackId, result);
+        VehicleColorStatisticsProcessResult result = _mapper.Map<VehicleColorStatisticsProcessResult>(typeAnaliseResult);
+        _sharedMemoryService.VehicleColorStatisticsProcessResultDictionary.Add(inputData.TrackId, result);
         return result;
+    }
+
+    private async Task WorkWithDependentData(string trackId)
+    {
+        _sharedMemoryService.VehicleMarkProcessResultDictionary.TryGetValue(trackId, out VehicleMarkProcessResult dependentData);
+        Console.WriteLine($"DependentDta(VehicleMarkProcessResult ) Message: {dependentData.Message}");
     }
 }

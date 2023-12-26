@@ -1,7 +1,10 @@
+using DataFlowProducerConsumer.Config;
 using DataFlowProducerConsumer.Models;
+using DataFlowProducerConsumer.Models.Results;
+using DataFlowProducerConsumer.Models.Results.Analyse;
 using DataFlowProducerConsumer.Processors;
 
-namespace DataFlowProducerConsumer.Services;
+namespace DataFlowProducerConsumer.Services.Analysers;
 
 class VehicleTypeAnalyzerService : IVehicleAnalyzerService<TypeAnalyseResult>
 {

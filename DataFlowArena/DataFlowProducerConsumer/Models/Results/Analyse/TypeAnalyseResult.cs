@@ -1,4 +1,4 @@
-namespace DataFlowProducerConsumer.Processors;
+namespace DataFlowProducerConsumer.Models.Results.Analyse;
 
 internal class TypeAnalyseResult
 {

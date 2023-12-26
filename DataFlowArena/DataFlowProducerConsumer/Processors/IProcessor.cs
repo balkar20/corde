@@ -3,12 +3,12 @@ using DataFlowProducerConsumer.Models.Results;
 
 namespace DataFlowProducerConsumer.Processors;
 
-public interface IProcessor<in TInputData, TOutputData>
+public interface IProcessor<in TInputData>
     // where TOutputData : new()
-    where TOutputData : IProcessResult
+    // where TOutputData : IProcessResult
 {
     // TOutputData ProcessAsync(TInputData inputData);
     bool CanRun { get; set; }
     bool Completed { get; set; }
-    ValueTask<TOutputData> ProcessAsync(TInputData inputData);
+    Task ProcessAsync(TInputData inputData);
 }

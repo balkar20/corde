@@ -5,13 +5,6 @@ namespace DataFlowProducerConsumer;
 
 class TrackDevice : ITrackDevice
 {
-    // public TYPE Type { get; set; }
-    // public TrackDevice()
-    // {
-    //     
-    // }
-    
-    
     public Task<BatchOfTracks> GiveMeTrackDataBunch(string batchType)
     {
         return Task.FromResult<BatchOfTracks>(GetRandomData(20));

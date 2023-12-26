@@ -1,6 +1,7 @@
 using AutoMapper.Internal;
 using DataFlowProducerConsumer.Models;
 using DataFlowProducerConsumer.Models.Results;
+using DataFlowProducerConsumer.Services.Storage;
 
 namespace DataFlowProducerConsumer.Services;
 
@@ -27,8 +28,20 @@ class SharedMemoryVehicleService : ISharedMemoryVehicleService
     }
     
     public Dictionary<string, VehicleTypeProcessResult> VehicleTypeProcessResultDictionary { get;  }
+    
     public Dictionary<string, VehicleMarkProcessResult> VehicleMarkProcessResultDictionary { get; }
+    
     public Dictionary<string, VehicleColorStatisticsProcessResult> VehicleColorStatisticsProcessResultDictionary { get; }
+    
+    public Dictionary<string, VehicleDangerProcessResult> VehicleDangerProcessResultDictionary { get; }
+    
+    public Dictionary<string, VehicleTrafficProcessResult> VehicleTrafficProcessResultDictionary { get; }
+    
+    
+    public Dictionary<string, VehicleSeasonProcessResult> VehicleSeasonProcessResultDictionary { get; }
+    
+    
+    // public Dictionary<string, VehicleTrafficProcessResult> VehicleProcessResultDictionary { get; }
 
     // public Vehicle GetVehicleDataByTrackId(string trackId)
     // {

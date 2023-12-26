@@ -4,10 +4,11 @@ using DataFlowProducerConsumer.Models;
 using DataFlowProducerConsumer.Models.Results;
 using DataFlowProducerConsumer.Processors.Abstractions;
 using DataFlowProducerConsumer.Services;
+using DataFlowProducerConsumer.Services.Storage;
 
 namespace DataFlowProducerConsumer.Processors;
 
-public class VehicleMarkProcessor: Processor<Track, VehicleMarkProcessResult>
+public class VehicleMarkProcessor: Processor<Track>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
     private readonly IVehicleAnalyzerService<VehicleMarkProcessResult> _analyserService;
@@ -18,11 +19,7 @@ public class VehicleMarkProcessor: Processor<Track, VehicleMarkProcessResult>
         _sharedMemoryService = sharedMemoryService;
     }
 
-    public string TrackId { get; set; }
-    public bool CanRun { get; set; }
-    public bool Completed { get; set; }
-
-    public override async Task<VehicleMarkProcessResult> ProcessLogic(Track inputData)
+    public override async Task<IProcessResult> ProcessLogic(Track inputData)
     {
         var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
         
@@ -35,26 +32,16 @@ public class VehicleMarkProcessor: Processor<Track, VehicleMarkProcessResult>
         int bytesProcessed = 0;
         
         var testVeh = new Vehicle();
+        await WorkWithDependentData(inputData.TrackId);
         var typeAnaliseResult = await _analyserService.Analyse(testVeh);
-        return _mapper.Map<VehicleMarkProcessResult>(typeAnaliseResult);
+        var result =  _mapper.Map<VehicleMarkProcessResult>(typeAnaliseResult);
+        _sharedMemoryService.VehicleMarkProcessResultDictionary.Add(inputData.TrackId, result);
+        return result;
     }
 
-    // public async ValueTask<VehicleTypeProcessResult> ProcessAsync(Track inputData)
-    // {
-    //     var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
-    //     
-    //     foreach (var vehicle in vehicles)
-    //     {
-    //         var vehicleType = vehicle.VehicleType;
-    //         
-    //     }
-    //    
-    //     int bytesProcessed = 0;
-    //
-    //     var testVeh = new Vehicle();
-    //     var typeAnaliseResult = await _analyserService.Analyse(testVeh);
-    //     VehicleTypeProcessResult result = _mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
-    //     
-    //     return result;
-    // }
+    private async Task WorkWithDependentData(string trackId)
+    {
+         _sharedMemoryService.VehicleColorStatisticsProcessResultDictionary.TryGetValue(trackId, out VehicleColorStatisticsProcessResult dependentData);
+         Console.WriteLine($"DependentDta(VehicleColorStatistics) Message: {dependentData.Message}");
+    }
 }
