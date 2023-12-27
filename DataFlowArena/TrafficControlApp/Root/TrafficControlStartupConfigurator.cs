@@ -1,0 +1,121 @@
+using AutoMapper;
+using TrafficControlApp.Config;
+using TrafficControlApp.Consumers;
+using TrafficControlApp.Consumers.Abstractions;
+using TrafficControlApp.Contexts;
+using TrafficControlApp.Producers;
+using TrafficControlApp.Producers.Abstraction;
+using TrafficControlApp.Root.Abstractions;
+using TrafficControlApp.Services;
+using Microsoft.Extensions.Configuration;
+using TrafficControlApp.Mapping;
+using TrafficControlApp.Models.Results.Analyse;
+using TrafficControlApp.Services.Analysers;
+
+namespace TrafficControlApp.Root;
+
+public class TrafficControlStartupConfigurator : StartupConfigurator
+{
+    private ApplicationConfiguration applicationConfiguration;
+    private TrafficProcessingContext _context;
+    
+    private ITrackConsumer _trackConsumer;
+    private ITrackProducer _trackProducer;
+    private IMapper _mapper;
+    private ITrackDevice _trackDevice;
+
+    public TrafficControlStartupConfigurator()
+    {
+        _trackDevice = new TrackDevice();
+        Configure();
+    }
+    
+    public override async Task Run()
+    {
+        await new TrafficFlowWorker(
+                _trackDevice, 
+                _context.VehicleRootProcessor, 
+                _trackProducer,
+                _trackConsumer)
+            .StartProcess();
+    }
+    
+    protected override void CreateConfiguration()
+    {
+        var builder = new ConfigurationBuilder();
+        builder.AddJsonFile("appsettings.json", optional: false);
+        // .(Directory.GetCurrentDirectory())
+        // .AddJsonFile("config.json", optional: false);
+
+        IConfiguration config = builder.Build();
+        //Create AppConfiguration
+        //todo Make it deserialized from IConfiguration
+        applicationConfiguration = new ApplicationConfiguration()
+        {
+            BoundedCapacity = 100,
+            ProduceSpeed = TimeSpan.FromSeconds(0.5),
+            MaxParallelConsumeCount = 4,
+            PropagateCompletion = true,
+            VehicleTypeAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            },
+            VehicleColorAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            },
+            VehicleSeasonAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            },
+            VehicleTrafficAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            },
+            VehicleDangerAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            },
+            VehicleMarkAnalyseConfig = new()
+            {
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
+            }
+        };
+    }
+
+    protected override void ConfigureProducers()
+    {
+        _trackProducer = new TrackProducer(_trackDevice, applicationConfiguration);
+    }
+
+    protected override void ConfigureConsumers()
+    {
+        _trackConsumer = new TrackConsumer(applicationConfiguration, _context.VehicleRootProcessor);
+    }
+
+    protected override void ConfigureMapping()
+    {
+        MapperConfiguration config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TrackProcessingMappingProfile());  //mapping between Web and Business layer objects// mapping between Business and DB layer objects
+        });
+        _mapper = config.CreateMapper();
+    }
+
+    protected override void ConfigureDependentProcessors()
+    {
+        _context = new TrafficProcessingContext(new SharedMemoryVehicleService(), applicationConfiguration);
+        _context.InitializeProcessors(applicationConfiguration, _mapper);
+        
+        //TypeDependant
+        _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
+        _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleDangerProcessor);
+        
+        //MarkDependant                                   
+        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
+        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
+        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
+    }
+
+    
+}
