@@ -2,7 +2,6 @@ using System.Threading.Tasks.Dataflow;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers.Abstractions;
 using TrafficControlApp.Models;
-using TrafficControlApp.Processors;
 using TrafficControlApp.Processors.Abstractions;
 
 namespace TrafficControlApp.Consumers;

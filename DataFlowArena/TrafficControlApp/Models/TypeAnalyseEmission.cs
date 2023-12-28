@@ -1,6 +1,6 @@
 using TrafficControlApp.Models.Enums;
 
-namespace TrafficControlApp.Processors;
+namespace TrafficControlApp.Models;
 
 internal class TypeAnalyseEmission
 {

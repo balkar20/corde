@@ -1,4 +1,3 @@
-using Serilog.Events;
 using TrafficControlApp.Processors.Abstractions;
 
 namespace TrafficControlApp.Exceptions.Abstractions;

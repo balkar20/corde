@@ -1,11 +1,8 @@
 using AutoMapper;
-using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
-using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
-using TrafficControlApp.Services.Storage;
 using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Processors.Abstractions;

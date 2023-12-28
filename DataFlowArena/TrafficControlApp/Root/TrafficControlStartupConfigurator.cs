@@ -12,8 +12,6 @@ using Serilog;
 using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.ClientDevices.Devices;
 using TrafficControlApp.Mapping;
-using TrafficControlApp.Models.Results.Analyse;
-using TrafficControlApp.Services.Analysers;
 
 
 namespace TrafficControlApp.Root;

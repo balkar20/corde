@@ -1,4 +1,3 @@
-using TrafficControlApp.Consumers.Abstractions;
 using TrafficControlApp.Models;
 
 namespace TrafficControlApp.Consumers.Abstractions;
