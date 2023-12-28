@@ -1,3 +1,5 @@
+using TrafficControlApp.Models.Enums;
+
 namespace TrafficControlApp.Processors;
 
 internal class TypeAnalyseEmission

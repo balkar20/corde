@@ -1,9 +1,9 @@
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 
-namespace TrafficControlApp.Services.Storage;
+namespace TrafficControlApp.Services.Storage.Abstractions;
 
-public interface ISharedMemoryVehicleService
+public interface ISharedMemoryStorage
 {
     Dictionary<string, VehicleTypeProcessResult> VehicleTypeProcessResultDictionary { get;  }
     Dictionary<string, VehicleMarkProcessResult> VehicleMarkProcessResultDictionary{ get; }

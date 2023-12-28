@@ -1,4 +1,4 @@
-namespace TrafficControlApp.Processors;
+namespace TrafficControlApp.Models.Enums;
 
 internal enum EmissionType
 {

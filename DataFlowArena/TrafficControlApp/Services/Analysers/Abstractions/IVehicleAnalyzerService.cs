@@ -1,7 +1,6 @@
 using TrafficControlApp.Models;
-using TrafficControlApp.Processors;
 
-namespace TrafficControlApp.Services;
+namespace TrafficControlApp.Services.Analysers.Abstractions;
 
 public interface IVehicleAnalyzerService<TAnalyseResult>
 {

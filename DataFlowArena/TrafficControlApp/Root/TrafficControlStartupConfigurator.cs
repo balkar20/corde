@@ -110,7 +110,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
 
     protected override void ConfigureDependentProcessors()
     {
-        _context = new TrafficProcessingContext(new SharedMemoryVehicleService(), applicationConfiguration);
+        _context = new TrafficProcessingContext(new SharedMemoryStorage(), applicationConfiguration);
         _context.InitializeProcessors(applicationConfiguration, _mapper);
         
         //TypeDependant

@@ -3,19 +3,21 @@ using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Services;
+using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
+using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
-public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemoryService,
+public abstract class Processor<TInput>(ISharedMemoryStorage _sharedMemoryService,
         IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService, IMapper _mapper, IEventLoggingService _eventLoggingService)
     : IProcessor<TInput> 
 {
 
     #region private fields
 
-    protected readonly ISharedMemoryVehicleService _sharedMemoryService;
+    protected readonly ISharedMemoryStorage _sharedMemoryService;
     protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
     protected readonly IMapper _mapper;
     protected static readonly IEventLoggingService _eventLoggingService;

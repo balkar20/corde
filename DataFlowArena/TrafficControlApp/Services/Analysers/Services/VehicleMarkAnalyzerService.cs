@@ -1,15 +1,15 @@
 using TrafficControlApp.Config;
 using TrafficControlApp.Models;
-using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
+using TrafficControlApp.Services.Analysers.Abstractions;
 
-namespace TrafficControlApp.Services.Analysers;
+namespace TrafficControlApp.Services.Analysers.Services;
 
 class VehicleMarkAnalyzerService(VehicleMarkAnalyseConfig vehicleMarkAnalyseConfig)
     : IVehicleAnalyzerService<IAnalysingResult>
 {
-    private  TimeSpan timeForAnalyse = vehicleMarkAnalyseConfig.TimeForAnalyse;
+    private TimeSpan timeForAnalyse => vehicleMarkAnalyseConfig.TimeForAnalyse;
 
     public async Task<IAnalysingResult> Analyse(Vehicle vehicle)
     {

@@ -8,20 +8,23 @@ using TrafficControlApp.Processors;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers;
+using TrafficControlApp.Services.Analysers.Abstractions;
+using TrafficControlApp.Services.Analysers.Services;
 using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
+using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Contexts;
 
 public class TrafficProcessingContext
 {
-    private readonly ISharedMemoryVehicleService _sharedMemoryVehicleService;
+    private readonly ISharedMemoryStorage _sharedMemoryStorage;
     private readonly ApplicationConfiguration _applicationConfiguration;
     private readonly IEventLoggingService _logger;
 
-    public TrafficProcessingContext(ISharedMemoryVehicleService sharedMemoryVehicleService, ApplicationConfiguration applicationConfiguration)
+    public TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, ApplicationConfiguration applicationConfiguration)
     {
-        _sharedMemoryVehicleService = sharedMemoryVehicleService;
+        _sharedMemoryStorage = sharedMemoryStorage;
         _applicationConfiguration = applicationConfiguration;
     }
 
@@ -48,12 +51,12 @@ public class TrafficProcessingContext
     public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper)
     {
         var analysers = GetAnalysers();
-        VehicleRootProcessor = new VehicleTypeProcessor(_sharedMemoryVehicleService, analysers.vehicleTypeAnalyzerService, mapper, _logger);
-        VehicleSeasonProcessor = new VehicleSeasonProcessor(_sharedMemoryVehicleService, analysers.seasonAnalyzerService, mapper, _logger);
-        VehicleColorProcessor = new VehicleColorProcessor(_sharedMemoryVehicleService, analysers.colorAnalyzerService, mapper, _logger);
-        VehicleMarkProcessor = new VehicleMarkProcessor(_sharedMemoryVehicleService, analysers.markAnalyzerService, mapper, _logger);
-        VehicleTrafficProcessor = new VehicleTrafficProcessor(_sharedMemoryVehicleService, analysers.trafficAnalyzerService, mapper, _logger);
-        VehicleDangerProcessor = new VehicleDangerProcessor(_sharedMemoryVehicleService, analysers.dangerAnalyzerService, mapper, _logger);
+        VehicleRootProcessor = new VehicleTypeProcessor(_sharedMemoryStorage, analysers.vehicleTypeAnalyzerService, mapper, _logger);
+        VehicleSeasonProcessor = new VehicleSeasonProcessor(_sharedMemoryStorage, analysers.seasonAnalyzerService, mapper, _logger);
+        VehicleColorProcessor = new VehicleColorProcessor(_sharedMemoryStorage, analysers.colorAnalyzerService, mapper, _logger);
+        VehicleMarkProcessor = new VehicleMarkProcessor(_sharedMemoryStorage, analysers.markAnalyzerService, mapper, _logger);
+        VehicleTrafficProcessor = new VehicleTrafficProcessor(_sharedMemoryStorage, analysers.trafficAnalyzerService, mapper, _logger);
+        VehicleDangerProcessor = new VehicleDangerProcessor(_sharedMemoryStorage, analysers.dangerAnalyzerService, mapper, _logger);
     }
     
     private (

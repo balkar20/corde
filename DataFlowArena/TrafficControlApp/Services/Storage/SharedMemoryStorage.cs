@@ -2,10 +2,11 @@ using AutoMapper.Internal;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Services.Storage;
+using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Services;
 
-class SharedMemoryVehicleService : ISharedMemoryVehicleService
+class SharedMemoryStorage : ISharedMemoryStorage
 {
     // private ISharedMemoryVehicleService _sharedMemoryVehicleServiceImplementation;
     private Dictionary<string, Vehicle> VehiclesByNumber;
@@ -17,7 +18,7 @@ class SharedMemoryVehicleService : ISharedMemoryVehicleService
     
     
 
-    public SharedMemoryVehicleService()
+    public SharedMemoryStorage()
     {
         VehiclesByNumber = new();
         VehiclesByTrackId = new();
@@ -67,7 +68,7 @@ class SharedMemoryVehicleService : ISharedMemoryVehicleService
         }));
     }
 
-    Task<List<Vehicle>> ISharedMemoryVehicleService.GetVehicleDataByTrackId(string trackId)
+    Task<List<Vehicle>> ISharedMemoryStorage.GetVehicleDataByTrackId(string trackId)
     {
         if (VehiclesByTrackId.TryGetValue(trackId, out  var val))
         {
@@ -79,7 +80,7 @@ class SharedMemoryVehicleService : ISharedMemoryVehicleService
     }
     
 
-    Task<Vehicle> ISharedMemoryVehicleService.GetVehicleDataByNumber(string number)
+    Task<Vehicle> ISharedMemoryStorage.GetVehicleDataByNumber(string number)
     {
         return  Task.FromResult(VehiclesByNumber[number]);
     }

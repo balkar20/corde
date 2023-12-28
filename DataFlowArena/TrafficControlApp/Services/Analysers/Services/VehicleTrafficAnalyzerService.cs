@@ -1,11 +1,10 @@
 using TrafficControlApp.Config;
 using TrafficControlApp.Models;
-using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
-using TrafficControlApp.Processors;
+using TrafficControlApp.Services.Analysers.Abstractions;
 
-namespace TrafficControlApp.Services.Analysers;
+namespace TrafficControlApp.Services.Analysers.Services;
 
 class VehicleTrafficAnalyzerService : IVehicleAnalyzerService<IAnalysingResult>
 {

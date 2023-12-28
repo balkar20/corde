@@ -6,13 +6,15 @@ using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
+using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
+using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Processors;
 
 public class VehicleColorProcessor(
-        ISharedMemoryVehicleService sharedMemoryService,
+        ISharedMemoryStorage sharedMemoryService,
         IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService,
         IMapper mapper,
         IEventLoggingService eventLoggingService)
