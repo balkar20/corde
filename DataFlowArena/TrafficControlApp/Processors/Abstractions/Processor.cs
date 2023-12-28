@@ -10,21 +10,13 @@ namespace TrafficControlApp.Processors.Abstractions;
 public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemoryService,
         IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService, IMapper _mapper)
     : IProcessor<TInput> 
-    // where TOutput : IProcessResult, new()
 {
-   protected readonly ISharedMemoryVehicleService _sharedMemoryService;
-   protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
-   protected readonly IMapper _mapper;
-    // public IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService { get; } = vehicleAnalyzerService;
 
     #region private fields
 
-    // protected readonly ISharedMemoryVehicleService _sharedMemoryService = sharedMemoryService;
-    // protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService = vehicleAnalyzerService;
-    // protected readonly IMapper _mapper = mapper;
-
-    #endregion
-    #region Constructors
+    protected readonly ISharedMemoryVehicleService _sharedMemoryService;
+    protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
+    protected readonly IMapper _mapper;
 
     #endregion
     
@@ -32,13 +24,15 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
 
         public bool CanRun { get; set; }
         
+        public string ProcessorId { get; set; }
+        
         public string ProcessId { get; set; }
         
         public string InputId { get; set; }
 
         public bool CompletedWithDependentProcessors { get; set; }
         
-        public Queue<IProcessor<TInput>?> ProcessorsDepended { get; set; }
+        public Queue<IProcessor<TInput>> ProcessorsDepended { get; set; }
         
     
         public IProcessor<TInput> CurrentCallingProcessorInCaseQueueIsEmpty { get; set; }
@@ -61,29 +55,28 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
     {
         if (CompletedWithDependentProcessors)
         {
-            // await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessLogic(inputData);
-            // await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessNext(inputData);
-            await ProcessLogic(inputData);
+            await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessNextAsync(inputData);
             return;
         }
 
         await ProcessLogic(inputData);
         var nextInQueProcessor = GetNextProcessor();
 
-        // NextInQueHasNoDependencies  = !nextInQueProcessor.ProcessorsDepended.TryPeek(out var afterHim);
         if (nextInQueProcessor == null)
         {
+            HandleProcessorCompletion();
         }
 
         CurrentCallingProcessorInCaseQueueIsEmpty = nextInQueProcessor;
-
-        CompletedWithDependentProcessors = true;
     }
     
     
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
-        // 1. Some validation for processor
+        if (ProcessorsDepended == null)
+        {
+            ProcessorsDepended = new Queue<IProcessor<TInput>>();
+        }
         ProcessorsDepended.Enqueue(dependentProcessor);
     }
 
@@ -96,6 +89,18 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
     {
         ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
         return proc;
+    }
+
+    private void HandleProcessorCompletion()
+    {
+        CompletedWithDependentProcessors = true;
+        SetUpNextTrackProcessor();
+    }
+
+    private void SetUpNextTrackProcessor()
+    {
+        this.CompletedWithDependentProcessors = false;
+        this.CurrentCallingProcessorInCaseQueueIsEmpty = this;
     }
 
     #endregion

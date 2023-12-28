@@ -6,9 +6,11 @@ public abstract class StartupConfigurator
     public void Configure()
     {
         CreateConfiguration();
+
+        ConfigureMapping();
         ConfigureProducers();
-        ConfigureConsumers();
         ConfigureDependentProcessors();
+        ConfigureConsumers();
         // ConfigureSharedMemory();
     }
 

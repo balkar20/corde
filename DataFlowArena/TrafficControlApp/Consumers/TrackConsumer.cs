@@ -11,11 +11,11 @@ public class TrackConsumer : ITrackConsumer
 {
     public SortedSet<int> Treads { get; set; }
     private IProcessor<Track> _processorPool;
-    private ApplicationConfiguration config;
+    private ApplicationConfiguration _config;
 
     public TrackConsumer(ApplicationConfiguration config, IProcessor<Track> processorPool)
     {
-        this.config = config;
+        _config = config;
         _processorPool = processorPool;
     }
     
@@ -24,12 +24,12 @@ public class TrackConsumer : ITrackConsumer
         var consumerBlock = new ActionBlock<Track>(
             track => _processorPool.ProcessNextAsync(track),
             new ExecutionDataflowBlockOptions 
-            { BoundedCapacity = config.BoundedCapacity,
-                MaxDegreeOfParallelism = config.MaxParallelConsumeCount });
+            { BoundedCapacity = _config.BoundedCapacity,
+                MaxDegreeOfParallelism = _config.MaxParallelConsumeCount });
         buffer.LinkTo(consumerBlock, new DataflowLinkOptions() 
-            { PropagateCompletion = config.PropagateCompletion });
+            { PropagateCompletion = _config.PropagateCompletion });
 
-        startProducing(consumerBlock);
+        await startProducing(consumerBlock);
 
         await consumerBlock.Completion;
     }

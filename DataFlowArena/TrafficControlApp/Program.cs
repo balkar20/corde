@@ -1,4 +1,13 @@
 ﻿using TrafficControlApp.Root;
 
 var startUpConfigurator = new TrafficControlStartupConfigurator();
-await startUpConfigurator.Run();
+
+try
+{
+    await startUpConfigurator.Run();
+}
+catch (Exception e)
+{
+    Console.WriteLine(e);
+    throw;
+}

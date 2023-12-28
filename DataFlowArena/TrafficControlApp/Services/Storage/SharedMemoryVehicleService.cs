@@ -69,7 +69,13 @@ class SharedMemoryVehicleService : ISharedMemoryVehicleService
 
     Task<List<Vehicle>> ISharedMemoryVehicleService.GetVehicleDataByTrackId(string trackId)
     {
-        return Task.FromResult(VehiclesByTrackId[trackId]);
+        if (VehiclesByTrackId.TryGetValue(trackId, out  var val))
+        {
+            return Task.FromResult(val);
+        }
+
+        return Task.FromResult(Enumerable.Empty<Vehicle>().ToList());
+
     }
     
 

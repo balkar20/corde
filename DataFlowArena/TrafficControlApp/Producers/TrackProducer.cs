@@ -14,6 +14,7 @@ public class TrackProducer: ITrackProducer
     {
         _trackDevice = trackDevice;
         this.config = config;
+        Treads = new SortedSet<int>();
     }
 
     public SortedSet<int> Treads { get; set; }
