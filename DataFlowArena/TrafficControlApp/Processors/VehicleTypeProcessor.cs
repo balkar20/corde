@@ -18,7 +18,7 @@ public class VehicleTypeProcessor(
 {
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
     {
-        var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
+        var vehicles = await sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
         
         foreach (var vehicle in vehicles)
         {
@@ -30,8 +30,8 @@ public class VehicleTypeProcessor(
         
         var testVeh = new Vehicle();
         var typeAnaliseResult = await vehicleAnalyzerService.Analyse(testVeh);
-        var result = _mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
-        _sharedMemoryService.VehicleTypeProcessResultDictionary.Add(inputData.TrackId, result);
+        var result = mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
+        sharedMemoryService.VehicleTypeProcessResultDictionary.Add(inputData.TrackId, result);
         return result;
     }
 }

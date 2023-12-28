@@ -29,7 +29,7 @@ public class VehicleTrafficProcessor(
 
      protected override async Task<IProcessResult> ProcessLogic(Track inputData)
         {
-            var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
+            var vehicles = await sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
             
             foreach (var vehicle in vehicles)
             {
@@ -42,8 +42,8 @@ public class VehicleTrafficProcessor(
             var testVeh = new Vehicle();
             await WorkWithDependentData(inputData.TrackId);
             var typeAnaliseResult = await vehicleAnalyzerService.Analyse(testVeh);
-            var result =  _mapper.Map<VehicleTrafficProcessResult>(typeAnaliseResult);
-            _sharedMemoryService.VehicleTrafficProcessResultDictionary.Add(inputData.TrackId, result);
+            var result =  mapper.Map<VehicleTrafficProcessResult>(typeAnaliseResult);
+            sharedMemoryService.VehicleTrafficProcessResultDictionary.Add(inputData.TrackId, result);
             return result;
         }
 
@@ -54,7 +54,7 @@ public class VehicleTrafficProcessor(
 
     private async Task WorkWithDependentData(string trackId)
     {
-        _sharedMemoryService.VehicleMarkProcessResultDictionary.TryGetValue(trackId, out VehicleMarkProcessResult dependentData);
+        sharedMemoryService.VehicleMarkProcessResultDictionary.TryGetValue(trackId, out VehicleMarkProcessResult dependentData);
         Console.WriteLine($"DependentDta(VehicleColorStatistics) Message: {dependentData.Message}");
     }
 

@@ -12,16 +12,11 @@ namespace TrafficControlApp.Processors;
 
 public class VehicleSeasonProcessor: Processor<Track>
 {
-    private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<IAnalysingResult> _analyserService;
-    private readonly IMapper _mapper;
-
     public VehicleSeasonProcessor(ISharedMemoryVehicleService sharedMemoryService,
         IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
         IMapper mapper) : 
         base(sharedMemoryService, vehicleAnalyzerService, mapper)
     {
-        _sharedMemoryService = sharedMemoryService;
     }
 
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
@@ -38,7 +33,7 @@ public class VehicleSeasonProcessor: Processor<Track>
         
         var testVeh = new Vehicle();
         await WorkWithDependentData(inputData.TrackId);
-        var typeAnaliseResult = await _analyserService.Analyse(testVeh);
+        var typeAnaliseResult = await _vehicleAnalyzerService.Analyse(testVeh);
         var result =  _mapper.Map<VehicleTrafficProcessResult>(typeAnaliseResult);
         _sharedMemoryService.VehicleTrafficProcessResultDictionary.Add(inputData.TrackId, result);
         return result;

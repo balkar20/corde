@@ -12,16 +12,12 @@ namespace TrafficControlApp.Processors;
 
 public class VehicleDangerProcessor: Processor<Track>
 {
-    private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<IAnalysingResult> _analyserService;
-    private readonly IMapper _mapper;
 
     public VehicleDangerProcessor(ISharedMemoryVehicleService sharedMemoryService,
         IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
         IMapper mapper) : 
         base(sharedMemoryService, vehicleAnalyzerService, mapper)
     {
-        _sharedMemoryService = sharedMemoryService;
     }
 
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
@@ -38,7 +34,7 @@ public class VehicleDangerProcessor: Processor<Track>
         
         var testVeh = new Vehicle();
         await WorkWithDependentData(inputData.TrackId);
-        var typeAnaliseResult = await _analyserService.Analyse(testVeh);
+        var typeAnaliseResult = await _vehicleAnalyzerService.Analyse(testVeh);
         var result =  _mapper.Map<VehicleDangerProcessResult>(typeAnaliseResult);
         _sharedMemoryService.VehicleDangerProcessResultDictionary.Add(inputData.TrackId, result);
         return result;

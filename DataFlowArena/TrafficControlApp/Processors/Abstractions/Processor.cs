@@ -7,24 +7,24 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
-public abstract class Processor<TInput> : IProcessor<TInput> 
+public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemoryService,
+        IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService, IMapper _mapper)
+    : IProcessor<TInput> 
     // where TOutput : IProcessResult, new()
 {
+   protected readonly ISharedMemoryVehicleService _sharedMemoryService;
+   protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
+   protected readonly IMapper _mapper;
+    // public IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService { get; } = vehicleAnalyzerService;
+
     #region private fields
 
-    protected readonly ISharedMemoryVehicleService _sharedMemoryService;
-    protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
-    protected readonly IMapper _mapper;
+    // protected readonly ISharedMemoryVehicleService _sharedMemoryService = sharedMemoryService;
+    // protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService = vehicleAnalyzerService;
+    // protected readonly IMapper _mapper = mapper;
 
     #endregion
     #region Constructors
-
-    public Processor(ISharedMemoryVehicleService sharedMemoryService, IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, IMapper mapper)
-    {
-        _sharedMemoryService = sharedMemoryService;
-        _vehicleAnalyzerService = vehicleAnalyzerService;
-        _mapper = mapper;
-    }
 
     #endregion
     
