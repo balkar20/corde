@@ -31,12 +31,12 @@ public class TrafficProcessingContext
     // public Processor<Track, DangerAnalyseResult> VehicleDangerProcessor { get; set; }
     // public Processor<Track, TrafficAnalyseResult> VehicleTrafficProcessor { get; set; }
 
-    public Processor<Track, IAnalysingResult> VehicleRootProcessor { get; set; }
-    public Processor<Track, IAnalysingResult> VehicleMarkProcessor { get; set; }
-    public Processor<Track, IAnalysingResult> VehicleColorProcessor { get; set; }
-    public Processor<Track, IAnalysingResult> VehicleSeasonProcessor { get; set; }
-    public Processor<Track, IAnalysingResult> VehicleDangerProcessor { get; set; }
-    public Processor<Track, IAnalysingResult> VehicleTrafficProcessor { get; set; }
+    public IProcessor<Track> VehicleRootProcessor { get; set; }
+    public IProcessor<Track> VehicleMarkProcessor { get; set; }
+    public IProcessor<Track> VehicleColorProcessor { get; set; }
+    public IProcessor<Track> VehicleSeasonProcessor { get; set; }
+    public IProcessor<Track> VehicleDangerProcessor { get; set; }
+    public IProcessor<Track> VehicleTrafficProcessor { get; set; }
 
     #endregion
 
@@ -45,8 +45,12 @@ public class TrafficProcessingContext
     public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper)
     {
         var analysers = GetAnalysers();
-        VehicleRootProcessor = new VehicleTypeProcessor(_sharedMemoryVehicleService, analysers.vehicleTypeAnalyzerService, mapper);
-        VehicleColorProcessor = new VehicleColorProcessor(_sharedMemoryVehicleService, analysers.colorAnalyzerService, mapper);
+        var aso = new VehicleTypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig);
+        var asi = new VehicleColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig);
+
+        var tp = new VehicleTypeProcessor(_sharedMemoryVehicleService, aso, mapper);
+        VehicleRootProcessor = tp;
+        VehicleColorProcessor = asi;
         VehicleSeasonProcessor = new VehicleSeasonProcessor(_sharedMemoryVehicleService, analysers.seasonAnalyzerService, mapper);
         VehicleMarkProcessor = new VehicleMarkProcessor(_sharedMemoryVehicleService, analysers.markAnalyzerService, mapper);
         VehicleTrafficProcessor = new VehicleTrafficProcessor(_sharedMemoryVehicleService, analysers.trafficAnalyzerService, mapper);
@@ -62,6 +66,8 @@ public class TrafficProcessingContext
         IVehicleAnalyzerService<IAnalysingResult> dangerAnalyzerService
         ) GetAnalysers()
     {
+        var aso = new VehicleTypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig);
+        var asi = new VehicleColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig);
         return (
             new VehicleTypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig),
             new VehicleColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig),
@@ -69,8 +75,6 @@ public class TrafficProcessingContext
             new VehicleMarkAnalyzerService(_applicationConfiguration.VehicleMarkAnalyseConfig),
             new VehicleTrafficAnalyzerService(_applicationConfiguration.VehicleTrafficAnalyseConfig),
             new VehicleDangerAnalyzerService(_applicationConfiguration.VehicleDangerAnalyseConfig));
-
-
     }
     
 

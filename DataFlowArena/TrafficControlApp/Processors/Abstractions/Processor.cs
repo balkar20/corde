@@ -7,19 +7,19 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
-public abstract class Processor<TInput, TAnalyserResult> : IProcessor<TInput> 
+public abstract class Processor<TInput> : IProcessor<TInput> 
     // where TOutput : IProcessResult, new()
 {
     #region private fields
 
     protected readonly ISharedMemoryVehicleService _sharedMemoryService;
-    protected readonly IVehicleAnalyzerService<TAnalyserResult> _vehicleAnalyzerService;
+    protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
     protected readonly IMapper _mapper;
 
     #endregion
     #region Constructors
 
-    public Processor(ISharedMemoryVehicleService sharedMemoryService, IVehicleAnalyzerService<TAnalyserResult> vehicleAnalyzerService, IMapper mapper)
+    public Processor(ISharedMemoryVehicleService sharedMemoryService, IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, IMapper mapper)
     {
         _sharedMemoryService = sharedMemoryService;
         _vehicleAnalyzerService = vehicleAnalyzerService;
@@ -38,10 +38,10 @@ public abstract class Processor<TInput, TAnalyserResult> : IProcessor<TInput>
 
         public bool CompletedWithDependentProcessors { get; set; }
         
-        public Queue<Processor<TInput, IAnalysingResult>?> ProcessorsDepended { get; set; }
+        public Queue<IProcessor<TInput>?> ProcessorsDepended { get; set; }
         
     
-        public Processor<TInput, IAnalysingResult> CurrentCallingProcessorInCaseQueueIsEmpty { get; set; }
+        public IProcessor<TInput> CurrentCallingProcessorInCaseQueueIsEmpty { get; set; }
     
         public bool NextInQueHasNoDependencies { get; set; }
 
@@ -61,14 +61,16 @@ public abstract class Processor<TInput, TAnalyserResult> : IProcessor<TInput>
     {
         if (CompletedWithDependentProcessors)
         {
-            await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessLogic(inputData);
+            // await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessLogic(inputData);
+            // await CurrentCallingProcessorInCaseQueueIsEmpty.ProcessNext(inputData);
+            await ProcessLogic(inputData);
             return;
         }
 
         await ProcessLogic(inputData);
         var nextInQueProcessor = GetNextProcessor();
 
-        NextInQueHasNoDependencies  = !nextInQueProcessor.ProcessorsDepended.TryPeek(out var afterHim);
+        // NextInQueHasNoDependencies  = !nextInQueProcessor.ProcessorsDepended.TryPeek(out var afterHim);
         if (nextInQueProcessor == null)
         {
         }
@@ -79,7 +81,7 @@ public abstract class Processor<TInput, TAnalyserResult> : IProcessor<TInput>
     }
     
     
-    public void AddDependentProcessor(Processor<TInput, IAnalysingResult> dependentProcessor)
+    public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
         // 1. Some validation for processor
         ProcessorsDepended.Enqueue(dependentProcessor);
@@ -90,9 +92,9 @@ public abstract class Processor<TInput, TAnalyserResult> : IProcessor<TInput>
 
     #region Private Methods
 
-    private Processor<TInput, IAnalysingResult> GetNextProcessor()
+    private IProcessor<TInput> GetNextProcessor()
     {
-        ProcessorsDepended.TryDequeue(out Processor<TInput, IAnalysingResult>? proc);
+        ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
         return proc;
     }
 

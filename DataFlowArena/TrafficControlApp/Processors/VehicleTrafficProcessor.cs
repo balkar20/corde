@@ -10,7 +10,7 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleTrafficProcessor: Processor<Track,TrafficAnalyseResult>
+public class VehicleTrafficProcessor: Processor<Track>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
     private readonly IVehicleAnalyzerService<TrafficAnalyseResult> _analyserService;

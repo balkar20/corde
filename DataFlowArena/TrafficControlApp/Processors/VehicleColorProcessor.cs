@@ -9,7 +9,7 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleColorProcessor: Processor<Track, ColorAnalyseResult>
+public class VehicleColorProcessor: Processor<Track>
 {
     public VehicleColorProcessor(
         ISharedMemoryVehicleService sharedMemoryService,

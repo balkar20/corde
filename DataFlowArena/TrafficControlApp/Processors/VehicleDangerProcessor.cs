@@ -9,7 +9,7 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleDangerProcessor: Processor<Track, DangerAnalyseResult>
+public class VehicleDangerProcessor: Processor<Track>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
     private readonly IVehicleAnalyzerService<VehicleDangerProcessResult> _analyserService;

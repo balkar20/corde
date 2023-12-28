@@ -10,20 +10,12 @@ using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleTypeProcessor: Processor<Track, IAnalysingResult>
+public class VehicleTypeProcessor(
+    ISharedMemoryVehicleService sharedMemoryService,
+    IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService,
+    IMapper mapper)
+    : Processor<Track>(sharedMemoryService, vehicleAnalyzerService, mapper)
 {
-    private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<IAnalysingResult> _analyserService;
-    private readonly IMapper _mapper;
-
-    public VehicleTypeProcessor(ISharedMemoryVehicleService sharedMemoryService,
-        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
-        IMapper mapper) : 
-        base(sharedMemoryService, vehicleAnalyzerService, mapper)
-    {
-        _sharedMemoryService = sharedMemoryService;
-    }
-
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
     {
         var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);
@@ -37,7 +29,7 @@ public class VehicleTypeProcessor: Processor<Track, IAnalysingResult>
         int bytesProcessed = 0;
         
         var testVeh = new Vehicle();
-        var typeAnaliseResult = await _analyserService.Analyse(testVeh);
+        var typeAnaliseResult = await vehicleAnalyzerService.Analyse(testVeh);
         var result = _mapper.Map<VehicleTypeProcessResult>(typeAnaliseResult);
         _sharedMemoryService.VehicleTypeProcessResultDictionary.Add(inputData.TrackId, result);
         return result;
