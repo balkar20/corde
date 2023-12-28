@@ -6,20 +6,18 @@ using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
+using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleMarkProcessor: Processor<Track>
+public class VehicleMarkProcessor(
+        ISharedMemoryVehicleService sharedMemoryService,
+        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService,
+        IMapper mapper,
+        IEventLoggingService eventLoggingService)
+    : Processor<Track>(sharedMemoryService, vehicleAnalyzerService, mapper, eventLoggingService)
 {
-
-    public VehicleMarkProcessor(ISharedMemoryVehicleService sharedMemoryService,
-        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
-        IMapper mapper) : 
-        base(sharedMemoryService, vehicleAnalyzerService, mapper)
-    {
-    }
-
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
     {
         var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.TrackId);

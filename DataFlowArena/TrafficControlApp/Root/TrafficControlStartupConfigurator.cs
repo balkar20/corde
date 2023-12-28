@@ -8,9 +8,11 @@ using TrafficControlApp.Producers.Abstraction;
 using TrafficControlApp.Root.Abstractions;
 using TrafficControlApp.Services;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using TrafficControlApp.Mapping;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Services.Analysers;
+
 
 namespace TrafficControlApp.Root;
 
@@ -23,6 +25,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     private ITrackProducer _trackProducer;
     private IMapper _mapper;
     private ITrackDevice _trackDevice;
+    private ILogger _logger;
 
     public TrafficControlStartupConfigurator()
     {
@@ -115,6 +118,30 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
         _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
         _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
+    }
+    
+    public void ConfigureLogging()
+    {
+        // var credentials = new GrafanaLokiCredentials()
+        // {
+        //     User = "admin",
+        //     Password = "admin"
+        // };
+        // _logger = new Serilog.Configuration.
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("ALabel", "ALabelValue")
+            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Hour)
+            .CreateLogger();
+            // .WriteTo.GrafanaLoki(
+            //     "http://localhost:3100",
+            //     credentials,
+            //     new Dictionary<string, string>() { { "app", "Serilog.Sinks.GrafanaLoki.ProductWebApi" } }, // Global labels
+            //     Serilog.Events.LogEventLevel.Debug
+            // )
+            // .CreateLogger();
+        _logger = Log.Logger;
     }
 
     

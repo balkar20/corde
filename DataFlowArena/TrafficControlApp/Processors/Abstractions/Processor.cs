@@ -3,12 +3,13 @@ using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Services;
+using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
 public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemoryService,
-        IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService, IMapper _mapper)
+        IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService, IMapper _mapper, IEventLoggingService _eventLoggingService)
     : IProcessor<TInput> 
 {
 
@@ -17,6 +18,7 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
     protected readonly ISharedMemoryVehicleService _sharedMemoryService;
     protected readonly IVehicleAnalyzerService<IAnalysingResult> _vehicleAnalyzerService;
     protected readonly IMapper _mapper;
+    protected static readonly IEventLoggingService _eventLoggingService;
 
     #endregion
     
@@ -32,9 +34,8 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
 
         public bool CompletedWithDependentProcessors { get; set; }
         
-        public Queue<IProcessor<TInput>> ProcessorsDepended { get; set; }
+        public  Queue<IProcessor<TInput>> ProcessorsDepended => new ();
         
-    
         public IProcessor<TInput> CurrentCallingProcessorInCaseQueueIsEmpty { get; set; }
     
         public bool NextInQueHasNoDependencies { get; set; }
@@ -59,12 +60,17 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
             return;
         }
 
+        
         await ProcessLogic(inputData);
+
+        
+        await _eventLoggingService.LogEvent($"PS: {this.ProcessorId} | ItemId: {this.InputId}, {this.ProcessorId}");
+        
         var nextInQueProcessor = GetNextProcessor();
 
         if (nextInQueProcessor == null)
         {
-            HandleProcessorCompletion();
+            await HandleProcessorCompletion();
         }
 
         CurrentCallingProcessorInCaseQueueIsEmpty = nextInQueProcessor;
@@ -73,10 +79,10 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
     
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
-        if (ProcessorsDepended == null)
-        {
-            ProcessorsDepended = new Queue<IProcessor<TInput>>();
-        }
+        // if (ProcessorsDepended == null)
+        // {
+        //     ProcessorsDepended = new Queue<IProcessor<TInput>>();
+        // }
         ProcessorsDepended.Enqueue(dependentProcessor);
     }
 
@@ -91,8 +97,9 @@ public abstract class Processor<TInput>(ISharedMemoryVehicleService _sharedMemor
         return proc;
     }
 
-    private void HandleProcessorCompletion()
+    private async Task HandleProcessorCompletion()
     {
+        await _eventLoggingService.LogEvent($"PS: {this.ProcessorId}  HandleProcessorCompletion| ItemId: {this.InputId}, {this.ProcessorId}");
         CompletedWithDependentProcessors = true;
         SetUpNextTrackProcessor();
     }

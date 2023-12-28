@@ -6,19 +6,18 @@ using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
+using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Storage;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleColorProcessor: Processor<Track>
-{
-    public VehicleColorProcessor(
+public class VehicleColorProcessor(
         ISharedMemoryVehicleService sharedMemoryService,
-        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
-        IMapper mapper) : 
-        base(sharedMemoryService, vehicleAnalyzerService, mapper)
-    {
-    }
+        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService,
+        IMapper mapper,
+        IEventLoggingService eventLoggingService)
+    : Processor<Track>(sharedMemoryService, vehicleAnalyzerService, mapper, eventLoggingService)
+{
 
     protected override async Task<IProcessResult> ProcessLogic(Track inputData)
     {
@@ -42,6 +41,6 @@ public class VehicleColorProcessor: Processor<Track>
     private async Task WorkWithDependentData(string trackId)
     {
         _sharedMemoryService.VehicleMarkProcessResultDictionary.TryGetValue(trackId, out VehicleMarkProcessResult dependentData);
-        Console.WriteLine($"DependentDta(VehicleMarkProcessResult ) Message: {dependentData.Message}");
+        Console.WriteLine($"DependentData(VehicleColorProcessResult ) Message: {dependentData.Message}");
     }
 }
