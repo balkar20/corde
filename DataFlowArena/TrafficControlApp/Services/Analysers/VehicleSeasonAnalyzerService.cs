@@ -2,11 +2,12 @@ using TrafficControlApp.Config;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
+using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors;
 
 namespace TrafficControlApp.Services.Analysers;
 
-class VehicleSeasonAnalyzerService : IVehicleAnalyzerService<SeasonAnalyseResult>
+class VehicleSeasonAnalyzerService : IVehicleAnalyzerService<IAnalysingResult>
 {
     private  TimeSpan timeForAnalyse;
 
@@ -15,7 +16,7 @@ class VehicleSeasonAnalyzerService : IVehicleAnalyzerService<SeasonAnalyseResult
         this.timeForAnalyse = vehicleSeasonAnalyseConfig.TimeForAnalyse;
     }
 
-    public async Task<SeasonAnalyseResult> Analyse(Vehicle vehicle)
+    public async Task<IAnalysingResult> Analyse(Vehicle vehicle)
     {
         await Task.Delay(timeForAnalyse);
         return new SeasonAnalyseResult

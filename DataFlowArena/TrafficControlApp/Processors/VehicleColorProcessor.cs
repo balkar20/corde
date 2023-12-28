@@ -3,6 +3,7 @@ using AutoMapper;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
+using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Storage;
@@ -13,7 +14,7 @@ public class VehicleColorProcessor: Processor<Track>
 {
     public VehicleColorProcessor(
         ISharedMemoryVehicleService sharedMemoryService,
-        IVehicleAnalyzerService<ColorAnalyseResult> vehicleAnalyzerService, 
+        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
         IMapper mapper) : 
         base(sharedMemoryService, vehicleAnalyzerService, mapper)
     {

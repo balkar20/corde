@@ -45,13 +45,9 @@ public class TrafficProcessingContext
     public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper)
     {
         var analysers = GetAnalysers();
-        var aso = new VehicleTypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig);
-        var asi = new VehicleColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig);
-
-        var tp = new VehicleTypeProcessor(_sharedMemoryVehicleService, aso, mapper);
-        VehicleRootProcessor = tp;
-        VehicleColorProcessor = asi;
+        VehicleRootProcessor = new VehicleTypeProcessor(_sharedMemoryVehicleService, analysers.vehicleTypeAnalyzerService, mapper);
         VehicleSeasonProcessor = new VehicleSeasonProcessor(_sharedMemoryVehicleService, analysers.seasonAnalyzerService, mapper);
+        VehicleColorProcessor = new VehicleColorProcessor(_sharedMemoryVehicleService, analysers.colorAnalyzerService, mapper);
         VehicleMarkProcessor = new VehicleMarkProcessor(_sharedMemoryVehicleService, analysers.markAnalyzerService, mapper);
         VehicleTrafficProcessor = new VehicleTrafficProcessor(_sharedMemoryVehicleService, analysers.trafficAnalyzerService, mapper);
         VehicleDangerProcessor = new VehicleDangerProcessor(_sharedMemoryVehicleService, analysers.dangerAnalyzerService, mapper);

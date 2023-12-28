@@ -3,6 +3,7 @@ using AutoMapper;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
+using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Storage;
@@ -12,11 +13,11 @@ namespace TrafficControlApp.Processors;
 public class VehicleDangerProcessor: Processor<Track>
 {
     private readonly ISharedMemoryVehicleService _sharedMemoryService;
-    private readonly IVehicleAnalyzerService<VehicleDangerProcessResult> _analyserService;
+    private readonly IVehicleAnalyzerService<IAnalysingResult> _analyserService;
     private readonly IMapper _mapper;
 
     public VehicleDangerProcessor(ISharedMemoryVehicleService sharedMemoryService,
-        IVehicleAnalyzerService<DangerAnalyseResult> vehicleAnalyzerService, 
+        IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
         IMapper mapper) : 
         base(sharedMemoryService, vehicleAnalyzerService, mapper)
     {
