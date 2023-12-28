@@ -9,6 +9,8 @@ using TrafficControlApp.Root.Abstractions;
 using TrafficControlApp.Services;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using TrafficControlApp.ClientDevices.Abstractions;
+using TrafficControlApp.ClientDevices.Devices;
 using TrafficControlApp.Mapping;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Services.Analysers;
@@ -35,11 +37,11 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     
     public override async Task Run()
     {
-        await new TrafficFlowWorker(
+        await new TrafficFlowProcessStarter(
                 _trackDevice, 
                 _context.VehicleRootProcessor, 
                 _trackProducer,
-                _trackConsumer)
+                _trackConsumer, applicationConfiguration)
             .StartProcess();
     }
     
@@ -58,6 +60,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
             BoundedCapacity = 100,
             ProduceSpeed = TimeSpan.FromSeconds(0.5),
             MaxParallelConsumeCount = 4,
+            ConsumeSpeed = TimeSpan.FromSeconds(2),
             PropagateCompletion = true,
             VehicleTypeAnalyseConfig = new()
             {

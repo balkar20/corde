@@ -1,6 +1,4 @@
-using TrafficControlApp.Models;
-
-namespace TrafficControlApp;
+namespace TrafficControlApp.Models;
 
 public class BatchOfTracks
 {

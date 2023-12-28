@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace TrafficControlApp;
+namespace TrafficControlApp.Models;
 
 public struct FramePoint
 {

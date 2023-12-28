@@ -1,7 +1,8 @@
 using System.Drawing;
+using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.Models;
 
-namespace TrafficControlApp;
+namespace TrafficControlApp.ClientDevices.Devices;
 
 class TrackDevice : ITrackDevice
 {

@@ -1,4 +1,4 @@
-namespace TrafficControlApp;
+namespace TrafficControlApp.Models;
 
 public struct TimeFrame
 {

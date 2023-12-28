@@ -1,6 +1,6 @@
-using Microsoft.VisualBasic;
+using TrafficControlApp.Models;
 
-namespace TrafficControlApp;
+namespace TrafficControlApp.ClientDevices.Abstractions;
 
 public interface ITrackDevice
 {

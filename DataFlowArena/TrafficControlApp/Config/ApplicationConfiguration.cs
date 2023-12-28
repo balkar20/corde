@@ -8,6 +8,8 @@ public class ApplicationConfiguration
     
     public TimeSpan ProduceSpeed { get; set; }
     
+    public TimeSpan ConsumeSpeed { get; set; }
+    
     public bool PropagateCompletion { get; set; }
     
     public VehicleTypeAnalyseConfig VehicleTypeAnalyseConfig { get; set; }

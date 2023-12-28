@@ -1,4 +1,5 @@
 using System.Threading.Tasks.Dataflow;
+using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.Config;
 using TrafficControlApp.Models;
 using TrafficControlApp.Producers.Abstraction;
