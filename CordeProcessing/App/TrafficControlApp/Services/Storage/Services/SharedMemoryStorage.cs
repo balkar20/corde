@@ -11,36 +11,19 @@ namespace TrafficControlApp.Services;
 /// <summary>
 /// Shared Memory Operation should be Thread safe
 /// </summary>
-class SharedMemoryStorage : ISharedMemoryStorage
+public class SharedMemoryStorage : ISharedMemoryStorage
 {
-    // private ISharedMemoryVehicleService _sharedMemoryVehicleServiceImplementation;
+    public ConcurrentDictionary<string, Track> ProcessingItemsStorage { get; set; } = new();
     
-    // private ConcurrentDictionary<string, VehicleTypeProcessResult> VehicleTypeProcessResultDictionary;
-    // private ConcurrentDictionary<string, VehicleMarkProcessResult> VehicleMarkProcessResultDictionary;
-    // private ConcurrentDictionary<string, VehicleColorStatisticsProcessResult> VehicleColorStatisticsProcessResultDictionary;
+    public ConcurrentDictionary<string, VehicleTypeProcessionResult> ProcessionTypeResultStorage { get; set; } = new();
+    
+    public ConcurrentDictionary<string, VehicleMarkProcessionResult> ProcessionMarkResultStorage { get; set; } = new();
 
+    public ConcurrentDictionary<string, VehicleColorProcessionResult> ProcessionColorResultStorage { get; set; } = new();
 
-    // public IProcessingItemsStorageServiceRepository<VehicleTypeProcessionResult> ProcessingItemsStorageServiceRepository { get; }
-    // public IAnalysingItemsStorageRepository<AnalysingItem, string> AnalysingItemsStorageRepository { get; }
-    // public ConcurrentDictionary<string, VehicleTypeProcessionResult> VehicleTypeProcessResultDictionary { get;  } = new();
-    //
-    // public ConcurrentDictionary<string, VehicleMarkProcessionResult> VehicleMarkProcessResultDictionary { get; } = new();
-    //
-    // public ConcurrentDictionary<string, VehicleColorProcessionResult> VehicleColorStatisticsProcessResultDictionary { get; } = new();
-    //
-    // public ConcurrentDictionary<string, VehicleDangerProcessionResult> VehicleDangerProcessResultDictionary { get; }
-    //
-    // public ConcurrentDictionary<string, VehicleTrafficProcessionResult> VehicleTrafficProcessResultDictionary { get; }
-    //
-    //
-    // public ConcurrentDictionary<string, VehicleSeasonProcessionResult> VehicleSeasonProcessResultDictionary { get; }
-    
-    
-    // public ConcurrentDictionary<string, VehicleTrafficProcessResult> VehicleProcessResultDictionary { get; }
+    public ConcurrentDictionary<string, VehicleSeasonProcessionResult> ProcessionSeasonResultStorage { get; set; } = new();
 
-    // public Vehicle GetVehicleDataByTrackId(string trackId)
-    // {
-    //     return _sharedMemoryVehicleServiceImplementation.GetVehicleDataByTrackId(trackId);
-    // }
-    
+    public ConcurrentDictionary<string, VehicleDangerProcessionResult> ProcessionDangerResultStorage { get; set; } = new();
+
+    public ConcurrentDictionary<string, VehicleTrafficProcessionResult> ProcessionTrafficResultStorage { get; set; } = new();
 }

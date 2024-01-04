@@ -8,11 +8,11 @@ using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Services.Storage.Services;
 
-public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
+public  class ColorAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
 {
     private ISharedMemoryStorage sharedMemoryStorage;
 
-    public TypeAbstractDictionaryProcessingItemsStorageServiceRepository(ISharedMemoryStorage sharedMemoryStorage)
+    public ColorAbstractDictionaryProcessingItemsStorageServiceRepository(ISharedMemoryStorage sharedMemoryStorage)
     {
         this.sharedMemoryStorage = sharedMemoryStorage;
     }
@@ -26,9 +26,9 @@ public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IPr
     }
 
 
-    public async Task CreateProcessingItemResult(VehicleTypeProcessionResult result)
+    public async Task CreateProcessingItemResult(VehicleColorProcessionResult result)
     {
-        if (!sharedMemoryStorage.ProcessionTypeResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
+        if (!sharedMemoryStorage.ProcessionColorResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
         {
             throw new ProcessingItemResultCreationException(result);
         }
@@ -42,7 +42,7 @@ public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IPr
 
     public virtual async Task<IProcessionResult> GetProcessingItemResult(string processItemKey)
     {
-        sharedMemoryStorage.ProcessionTypeResultStorage.TryGetValue(processItemKey, out var result);
+        sharedMemoryStorage.ProcessionColorResultStorage.TryGetValue(processItemKey, out var result);
         return result;
     }
 }

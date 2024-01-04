@@ -5,6 +5,7 @@ using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
+using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Storage.Services;
 
@@ -35,7 +36,7 @@ public class RunTest
         var _trackDevice = new TrackDevice();
        var bunchOfTracks = await _trackDevice.GiveMeTrackDataBunch("");
         TypeAbstractDictionaryProcessingItemsStorageServiceRepository abst =
-            new TypeAbstractDictionaryProcessingItemsStorageServiceRepository();
+            new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(new SharedMemoryStorage());
 
         var track = bunchOfTracks.Tracks.Dequeue();
         abst.CreateProcessingItem(track);
