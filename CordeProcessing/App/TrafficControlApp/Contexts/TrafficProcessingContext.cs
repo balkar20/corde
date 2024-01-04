@@ -13,26 +13,12 @@ using TrafficControlApp.Services.Storage.Services;
 
 namespace TrafficControlApp.Contexts;
 
-public class TrafficProcessingContext
+public class TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, ApplicationConfiguration applicationConfiguration)
 {
-    private readonly ISharedMemoryStorage _sharedMemoryStorage;
-    private readonly ApplicationConfiguration _applicationConfiguration;
+    private readonly ISharedMemoryStorage _sharedMemoryStorage = sharedMemoryStorage;
     private readonly IEventLoggingService _logger;
 
-    public TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, ApplicationConfiguration applicationConfiguration)
-    {
-        _sharedMemoryStorage = sharedMemoryStorage;
-        _applicationConfiguration = applicationConfiguration;
-    }
-
     #region Processors
-
-    // public Processor<Track, TypeAnalyseResult> VehicleRootProcessor { get; setV; }
-    // public Processor<Track, MarkAnalyseResult> VehicleMarkProcessor { get; set; }
-    // public Processor<Track, ColorAnalyseResult> VehicleColorProcessor { get; set; }
-    // public Processor<Track, SeasonAnalyseResult> VehicleSeasonProcessor { get; set; }
-    // public Processor<Track, DangerAnalyseResult> VehicleDangerProcessor { get; set; }
-    // public Processor<Track, TrafficAnalyseResult> VehicleTrafficProcessor { get; set; }
 
     public IProcessor<Track> VehicleRootProcessor { get; set; }
     public IProcessor<Track> VehicleMarkProcessor { get; set; }
@@ -71,15 +57,15 @@ public class TrafficProcessingContext
         IAnalyzerService dangerAnalyzerService
         ) GetAnalysers()
     {
-        var aso = new TypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig);
-        var asi = new ColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig);
+        var aso = new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig);
+        var asi = new ColorAnalyzerService(applicationConfiguration.VehicleColorAnalyseConfig);
         return (
-            new TypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig),
-            new ColorAnalyzerService(_applicationConfiguration.VehicleColorAnalyseConfig),
-            new SeasonAnalyzerService(_applicationConfiguration.VehicleSeasonAnalyseConfig),
-            new MarkAnalyzerService(_applicationConfiguration.VehicleMarkAnalyseConfig),
-            new TrafficAnalyzerService(_applicationConfiguration.VehicleTrafficAnalyseConfig),
-            new DangerAnalyzerService(_applicationConfiguration.VehicleDangerAnalyseConfig));
+            new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig),
+            new ColorAnalyzerService(applicationConfiguration.VehicleColorAnalyseConfig),
+            new SeasonAnalyzerService(applicationConfiguration.VehicleSeasonAnalyseConfig),
+            new MarkAnalyzerService(applicationConfiguration.VehicleMarkAnalyseConfig),
+            new TrafficAnalyzerService(applicationConfiguration.VehicleTrafficAnalyseConfig),
+            new DangerAnalyzerService(applicationConfiguration.VehicleDangerAnalyseConfig));
     }
 
         
@@ -92,19 +78,17 @@ public class TrafficProcessingContext
         IProcessingItemsStorageServiceRepository<String,  Track> dangerRepository
         ) GetRepositories()
     {
-        var aso = new TypeAnalyzerService(_applicationConfiguration.VehicleTypeAnalyseConfig);
-        var sharedMemory = new SharedMemoryStorage();
+        var aso = new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig);
+        var _sharedMemoryStorage = new SharedMemoryStorage();
         return (
-            new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory),
-            new ColorAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory),
-            new SeasonAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory),
-            new MarkAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory),
-            new TrafficAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory),
-            new DangerAbstractDictionaryProcessingItemsStorageServiceRepository(sharedMemory));
-
+            new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
+            new ColorAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
+            new SeasonAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
+            new MarkAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
+            new TrafficAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
+            new DangerAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage));
     }
-
-
+    
     #endregion
 
     
