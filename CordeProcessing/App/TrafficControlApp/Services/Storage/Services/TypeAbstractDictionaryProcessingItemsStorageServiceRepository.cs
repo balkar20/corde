@@ -10,7 +10,7 @@ namespace TrafficControlApp.Services.Storage.Services;
 public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
 {
     private ConcurrentDictionary<string, Track> ProcessingItemsStorage => new ();
-    private ConcurrentDictionary<string, VehicleTypeProcessionResult> ProcessionResultStorage => new ();
+    private ConcurrentDictionary<string, VehicleTypeProcessionResult> ProcessionTypeResultStorage => new ();
 
     public async Task CreateProcessingItem(Track processItem)
     {
@@ -23,7 +23,7 @@ public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IPr
 
     public async Task CreateProcessingItemResult(VehicleTypeProcessionResult result)
     {
-        if (!ProcessionResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
+        if (!ProcessionTypeResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
         {
             throw new ProcessingItemResultCreationException(result);
         }
@@ -37,7 +37,7 @@ public  class TypeAbstractDictionaryProcessingItemsStorageServiceRepository: IPr
 
     public virtual async Task<IProcessionResult> GetProcessingItemResult(string processItemKey)
     {
-        ProcessionResultStorage.TryGetValue(processItemKey, out var result);
+        ProcessionTypeResultStorage.TryGetValue(processItemKey, out var result);
         return result;
     }
 }
