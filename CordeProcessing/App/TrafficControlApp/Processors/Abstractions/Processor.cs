@@ -42,7 +42,18 @@ where TInput: ApplicationItem<string>
     public bool NextInQueHasNoDependencies { get; set; }
 
     #endregion
+    
+    #region Events
 
+    public event IProcessor<TInput>.NotifyNestedProcessingCompleted NestedProcessingCompleted;
+        
+    #endregion
+    
+    // #region Delegates
+    //
+    // public delegate void NotifyNestedProcessingCompleted();
+    //     
+    // #endregion
 
     #region Protected Abstract Methods
 
@@ -86,6 +97,10 @@ where TInput: ApplicationItem<string>
         if (processorFromDependentQue.CompletedProcessing)
         {
             ProcessorFromDependentQue = GetNextProcessorFromDependants();
+            if (CompletedProcessing)
+            {
+                NestedProcessingCompleted?.Invoke();
+            }
         }
     }
 
@@ -139,21 +154,6 @@ where TInput: ApplicationItem<string>
     {
         return ProcessorsDepended;
     }
-
-    // private async Task HandleProcessorCompletionWithDependencies()
-    // {
-    //     await EventLoggingService.LogEvent(
-    //         $"PS: {this.ProcessorId}  HandleProcessorCompletion| ItemId: {this.InputId}, {this.ProcessorId}");
-    //     // CompletedWithDependentProcessors = true;
-    //     await SetUpNextItemProcessor();
-    // }
-    //
-    // private async Task SetUpNextItemProcessor()
-    // {
-    //     await EventLoggingService.LogEvent("Setting Up ");
-    //     // this.CompletedWithDependentProcessors = false;
-    //     this.CurrentCallingProcessorInCaseQueueIsEmpty = this;
-    // }
 
     #endregion
 }

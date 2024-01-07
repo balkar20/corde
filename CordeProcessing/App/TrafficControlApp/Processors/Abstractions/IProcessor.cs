@@ -20,5 +20,8 @@ public interface IProcessor<TInputData>
     void SetDependents(Queue<IProcessor<TInputData>> dependents);
 
     Queue<IProcessor<TInputData>> GetDependents();
+    
+    event NotifyNestedProcessingCompleted NestedProcessingCompleted;
+    delegate void NotifyNestedProcessingCompleted();
     // IProcessor<TInput> GetNextProcessor()
 }

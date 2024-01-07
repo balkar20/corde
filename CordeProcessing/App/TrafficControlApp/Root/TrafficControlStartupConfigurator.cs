@@ -47,10 +47,10 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     public  async Task Test()
     {
         var bunch =  await _trackDevice.GiveMeTrackDataBunch("Type");
-        var rootProcessor = _context.VehicleRootProcessor;
+        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
         foreach (var bunchTrack in bunch.Tracks)
         {
-            await rootProcessor.ProcessNextAsync(bunchTrack);
+            await _context.VehicleRootProcessor.ProcessNextAsync(bunchTrack);
         }
 
         // await new TrafficFlowProcessStarter(
@@ -60,7 +60,13 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         //         _trackConsumer, applicationConfiguration)
         //     .StartProcess();
     }
-    
+
+    private void RootProcessorOnNestedProcessingCompleted()
+    {
+        ConfigureDependentProcessors();
+        _logger.Warning("Root Processor was completed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
+
     protected override void CreateConfiguration()
     {
         var builder = new ConfigurationBuilder();
@@ -134,10 +140,13 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleDangerProcessor);
         
-        //MarkDependant                                   
-        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
-        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
-        _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
+        //MarkDependant                                  
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);                                
+        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
+        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
+        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor); 
     }
     
     protected override void ConfigureLogging()
