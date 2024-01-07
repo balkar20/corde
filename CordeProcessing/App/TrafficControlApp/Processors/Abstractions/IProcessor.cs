@@ -16,6 +16,9 @@ public interface IProcessor<TInputData>
     Task ProcessNextAsync(TInputData inputData);
 
     void AddDependentProcessor(IProcessor<TInputData> dependentProcessor);
-    
+
+    void SetDependents(Queue<IProcessor<TInputData>> dependents);
+
+    Queue<IProcessor<TInputData>> GetDependents();
     // IProcessor<TInput> GetNextProcessor()
 }

@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using TrafficControlApp.Models.Items.Base;
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
@@ -16,7 +17,7 @@ where TInput: ApplicationItem<string>
     // protected readonly IMapper _mapper = _mapper;
     protected readonly IEventLoggingService? EventLoggingService = eventLoggingService;
     
-    protected readonly Queue<IProcessor<TInput>> ProcessorsDepended = new ();
+    protected  Queue<IProcessor<TInput>> ProcessorsDepended = new ();
     protected readonly Queue<IProcessor<TInput>> ProcessorsDependedCopy = new ();
 
     #endregion
@@ -29,7 +30,7 @@ where TInput: ApplicationItem<string>
     
     public string InputId { get; set; }
 
-    public bool CompletedWithDependentProcessors { get; set; }
+    // public bool CompletedWithDependentProcessors { get; set; }
     
     public bool CompletedProcessing { get; set; }
 
@@ -55,7 +56,6 @@ where TInput: ApplicationItem<string>
     {
         try
         {
-            // ProcessorsDepended.CopyTo(ProcessorsDependedCopy);
             if (this.InputId != inputData.ItemId)
             {
                 EventLoggingService?.LogEvent($"ProcessNextAsync New item Id: {inputData.ItemId}");
@@ -64,35 +64,15 @@ where TInput: ApplicationItem<string>
             if (ProcessorFromDependentQue != null)
             {
                 await ProcessorFromDependentQue.ProcessNextAsync(inputData);
-                ProcessorFromDependentQue.CompletedProcessing = true;
-                SetNextProcessor();
-                // if (ProcessorFromDependentQue.CompletedProcessing && !ProcessorFromDependentQue.HasDependants)
-                // {
-                //     ProcessorFromDependentQue = GetNextProcessor();
-                // }
-                // else
-                // {
-                //     ProcessorFromDependentQue = ((Processor<TInput>)ProcessorFromDependentQue).GetNextProcessor();
-                // }
                 
+                SetNextProcessorFromDependent(ProcessorFromDependentQue);
                 return;
             }
             
             
             var processionResult = await ProcessLogic(inputData);
-            CompletedProcessing = true;
             SetNextProcessor();
             await EventLoggingService.LogEvent($"PS: {this.ProcessorId} | ItemId: {this.InputId}, {this.ProcessorId}");
-
-            // var nextInQueProcessor = GetNextProcessor();
-            // ProcessorFromDependentQue = nextInQueProcessor;
-            // if (nextInQueProcessor == null)
-            // {
-            //     await HandleProcessorCompletionWithDependencies();
-            //     return;
-            // }
-            
-            // CurrentCallingProcessorInCaseQueueIsEmpty = nextInQueProcessor;
         }
         catch (Exception e)
         {
@@ -100,7 +80,15 @@ where TInput: ApplicationItem<string>
             throw;
         }
     }
-    
+
+    private void SetNextProcessorFromDependent(IProcessor<TInput> processorFromDependentQue)
+    {
+        if (processorFromDependentQue.CompletedProcessing)
+        {
+            ProcessorFromDependentQue = GetNextProcessorFromDependants();
+        }
+    }
+
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
         // if (ProcessorsDepended == null)
@@ -120,48 +108,52 @@ where TInput: ApplicationItem<string>
     {
         throw new NotImplementedException();
     }
-    
-    protected IProcessor<TInput> GetNextProcessor()
+
+    protected IProcessor<TInput> GetNextProcessorFromDependants()
     {
-        // IProcessor<TInput> proc = null;
-        // if (ProcessorFromDependentQue.CompletedProcessing && !ProcessorFromDependentQue.HasDependants)
-        // {
-        //     ProcessorFromDependentQue = GetNextProcessor();
-        // }
-        // else
-        // {
-            ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
-        
+        ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
+        if (proc == null)
+        {
+            CompletedProcessing = true;
+        }
+
         return proc;
     }
     
     protected void SetNextProcessor()
     {
-        // IProcessor<TInput> proc = null;void
-        if (ProcessorFromDependentQue == null || (ProcessorFromDependentQue.CompletedProcessing && !ProcessorFromDependentQue.HasDependants))
-        {
-            ProcessorFromDependentQue = GetNextProcessor();
-        }
-        else
-        {
-            ProcessorFromDependentQue = ((Processor<TInput>)ProcessorFromDependentQue).ProcessorFromDependentQue;
-        }
+        ProcessorFromDependentQue = GetNextProcessorFromDependants();
     }
 
-    private async Task HandleProcessorCompletionWithDependencies()
+    void GetSubProcessor()
     {
-        await EventLoggingService.LogEvent(
-            $"PS: {this.ProcessorId}  HandleProcessorCompletion| ItemId: {this.InputId}, {this.ProcessorId}");
-        // CompletedWithDependentProcessors = true;
-        await SetUpNextItemProcessor();
+        return;
     }
 
-    private async Task SetUpNextItemProcessor()
+    public void SetDependents(Queue<IProcessor<TInput>> dependents)
     {
-        await EventLoggingService.LogEvent("Setting Up ");
-        this.CompletedWithDependentProcessors = false;
-        this.CurrentCallingProcessorInCaseQueueIsEmpty = this;
+        ProcessorsDepended = dependents;
     }
+
+    public Queue<IProcessor<TInput>>  GetDependents()
+    {
+        return ProcessorsDepended;
+    }
+
+    // private async Task HandleProcessorCompletionWithDependencies()
+    // {
+    //     await EventLoggingService.LogEvent(
+    //         $"PS: {this.ProcessorId}  HandleProcessorCompletion| ItemId: {this.InputId}, {this.ProcessorId}");
+    //     // CompletedWithDependentProcessors = true;
+    //     await SetUpNextItemProcessor();
+    // }
+    //
+    // private async Task SetUpNextItemProcessor()
+    // {
+    //     await EventLoggingService.LogEvent("Setting Up ");
+    //     // this.CompletedWithDependentProcessors = false;
+    //     this.CurrentCallingProcessorInCaseQueueIsEmpty = this;
+    // }
 
     #endregion
 }
