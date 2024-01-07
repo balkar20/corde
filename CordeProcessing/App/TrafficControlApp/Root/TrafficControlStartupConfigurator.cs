@@ -12,6 +12,7 @@ using Serilog;
 using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.ClientDevices.Devices;
 using TrafficControlApp.Mapping;
+using TrafficControlApp.Services.Events.Services;
 
 
 namespace TrafficControlApp.Root;
@@ -41,6 +42,23 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
                 _trackProducer,
                 _trackConsumer, applicationConfiguration)
             .StartProcess();
+    }
+    
+    public  async Task Test()
+    {
+        var bunch =  await _trackDevice.GiveMeTrackDataBunch("Type");
+        var rootProcessor = _context.VehicleRootProcessor;
+        foreach (var bunchTrack in bunch.Tracks)
+        {
+            await rootProcessor.ProcessNextAsync(bunchTrack);
+        }
+
+        // await new TrafficFlowProcessStarter(
+        //         _trackDevice, 
+        //         _context.VehicleRootProcessor, 
+        //         _trackProducer,
+        //         _trackConsumer, applicationConfiguration)
+        //     .StartProcess();
     }
     
     protected override void CreateConfiguration()
@@ -109,7 +127,8 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     protected override void ConfigureDependentProcessors()
     {
         _context = new TrafficProcessingContext(new SharedMemoryStorage(), applicationConfiguration);
-        _context.InitializeProcessors(applicationConfiguration, _mapper);
+        
+        _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
@@ -121,7 +140,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
     }
     
-    public void ConfigureLogging()
+    protected override void ConfigureLogging()
     {
         // var credentials = new GrafanaLokiCredentials()
         // {
@@ -134,6 +153,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
             .Enrich.FromLogContext()
             .Enrich.WithProperty("ALabel", "ALabelValue")
             .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Hour)
+            .WriteTo.Console()
             .CreateLogger();
             // .WriteTo.GrafanaLoki(
             //     "http://localhost:3100",

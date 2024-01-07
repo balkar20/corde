@@ -1,5 +1,4 @@
 ﻿using Moq;
-using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Services.Analysers.Abstractions;
 
 namespace Common.Contexts;

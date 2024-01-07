@@ -1,8 +1,5 @@
 using System.Collections.Concurrent;
-using AutoMapper.Internal;
 using TrafficControlApp.Models;
-using TrafficControlApp.Models.Items.Analysing;
-using TrafficControlApp.Models.Items.Processing;
 using TrafficControlApp.Models.Results;
 using TrafficControlApp.Services.Storage.Abstractions;
 

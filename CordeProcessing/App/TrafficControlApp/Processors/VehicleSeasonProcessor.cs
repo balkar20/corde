@@ -2,13 +2,11 @@ using AutoMapper;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results;
-using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
-using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Processors;
 
@@ -31,7 +29,7 @@ public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<str
         
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
-        var typeProcessionResult = mapper.Map<VehicleTypeProcessionResult>(typeAnaliseResult);
+        var typeProcessionResult = mapper.Map<VehicleSeasonProcessionResult>(typeAnaliseResult);
         return typeProcessionResult;
     }
 

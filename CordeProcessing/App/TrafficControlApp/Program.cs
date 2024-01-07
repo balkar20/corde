@@ -1,8 +1,5 @@
 ﻿using TrafficControlApp.Exceptions;
 using TrafficControlApp.Exceptions.Abstractions;
-using TrafficControlApp.Models;
-using TrafficControlApp.Models.Results;
-using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Root;
 
 var startUpConfigurator = new TrafficControlStartupConfigurator();

@@ -9,6 +9,7 @@ public abstract class StartupConfigurator
 
         ConfigureMapping();
         ConfigureProducers();
+        ConfigureLogging();
         ConfigureDependentProcessors();
         ConfigureConsumers();
         // ConfigureSharedMemory();
@@ -25,7 +26,7 @@ public abstract class StartupConfigurator
     protected abstract void ConfigureConsumers();
     protected abstract void ConfigureMapping();
 
-    // protected abstract void ConfigureSharedMemory();
+    protected abstract void ConfigureLogging();
     
     protected abstract void ConfigureDependentProcessors();
 }

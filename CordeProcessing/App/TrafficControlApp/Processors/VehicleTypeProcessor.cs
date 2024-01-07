@@ -2,7 +2,6 @@ using AutoMapper;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results;
-using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;

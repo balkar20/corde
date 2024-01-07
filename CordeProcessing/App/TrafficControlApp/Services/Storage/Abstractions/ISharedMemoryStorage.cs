@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using TrafficControlApp.Models;
-using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results;
 
 namespace TrafficControlApp.Services.Storage.Abstractions;

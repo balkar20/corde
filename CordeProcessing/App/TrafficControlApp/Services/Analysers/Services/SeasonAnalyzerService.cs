@@ -1,5 +1,4 @@
 using TrafficControlApp.Config;
-using TrafficControlApp.Models;
 using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;

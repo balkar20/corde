@@ -21,7 +21,10 @@ public class TrackConsumer : ITrackConsumer
     public async Task ConsumeAllAsync(ISourceBlock<Track> buffer, Func<ITargetBlock<Track>, Task> startProducing)
     {
         var consumerBlock = new ActionBlock<Track>(
-            track => _processorPool.ProcessNextAsync(track),
+            track =>
+            {
+                return _processorPool.ProcessNextAsync(track);
+            },
             new ExecutionDataflowBlockOptions 
             { BoundedCapacity = _config.BoundedCapacity,
                 MaxDegreeOfParallelism = _config.MaxParallelConsumeCount });

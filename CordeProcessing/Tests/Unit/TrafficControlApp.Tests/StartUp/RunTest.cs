@@ -1,10 +1,11 @@
+using System.Collections;
+using AutoMapper;
 using Moq;
 using TrafficControlApp.ClientDevices.Devices;
+using TrafficControlApp.Mapping;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Items.Analysing;
 using TrafficControlApp.Models.Results;
-using TrafficControlApp.Models.Results.Analyse;
-using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Storage.Services;
@@ -22,12 +23,12 @@ public class RunTest
 
     public RunTest()
     {
-        vehicleTypeAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
-        colorAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
-        seasonAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
-        markAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
-        trafficAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
-        dangerAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // vehicleTypeAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // colorAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // seasonAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // markAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // trafficAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
+        // dangerAnalyzerService.Setup(p => p.Analyse(It.IsAny<AnalysingItem>()));
     }
 
     [Fact]
@@ -47,4 +48,39 @@ public class RunTest
 
         var foo = abst.GetProcessingItemResult(track.ItemId);
     }
+
+    [Fact]
+    public async Task MapperTest()
+    {
+        MapperConfiguration config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(new TrackProcessingMappingProfile());  //mapping between Web and Business layer objects// mapping between Business and DB layer objects
+        });
+        var _mapper = config.CreateMapper();
+        var res = _mapper.Map<TypeAnalysingItem>(new Track());
+    }
+
+    [Fact]
+    public async Task QueueTest()
+    {
+        var que = new Queue<string>();
+        que.Enqueue("one");
+        que.Enqueue("two");
+        que.Enqueue("three");
+        Queue<string> myQueue2 = new Queue<string>(que);
+        var q2Deq = myQueue2.Dequeue(); 
+        var q1Deq = que.Dequeue(); 
+        
+        Assert.True(q2Deq == "one");
+        Assert.True(q1Deq == "one");
+    }
+    
+    public static void PrintValues(IEnumerable myCollection) 
+    { 
+        // This method prints all the 
+        // elements in the Stack. 
+        foreach(Object obj in myCollection) 
+            Console.WriteLine(obj); 
+        Console.WriteLine(); 
+    } 
 }

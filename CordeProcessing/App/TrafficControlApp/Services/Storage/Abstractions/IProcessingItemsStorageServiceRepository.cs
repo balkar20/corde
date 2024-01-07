@@ -1,7 +1,4 @@
-﻿using TrafficControlApp.Models;
-using TrafficControlApp.Models.Items.Analysing;
-using TrafficControlApp.Models.Items.Processing;
-using TrafficControlApp.Models.Results.Procession.Abstractions;
+﻿using TrafficControlApp.Models.Results.Procession.Abstractions;
 
 namespace TrafficControlApp.Services;
 

@@ -1,7 +1,6 @@
 using AutoMapper;
 using TrafficControlApp.Config;
 using TrafficControlApp.Models;
-using TrafficControlApp.Models.Results.Analyse.Abstractions;
 using TrafficControlApp.Processors;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
@@ -15,7 +14,6 @@ namespace TrafficControlApp.Contexts;
 
 public class TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, ApplicationConfiguration applicationConfiguration)
 {
-    private readonly ISharedMemoryStorage _sharedMemoryStorage = sharedMemoryStorage;
     private readonly IEventLoggingService _logger;
 
     #region Processors
@@ -31,16 +29,16 @@ public class TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, 
 
     #region Public Methods
 
-    public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper)
+    public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper, IEventLoggingService logger)
     {
         var analysers = GetAnalysers();
         var repositories = GetRepositories();
-        VehicleRootProcessor = new VehicleTypeProcessor(repositories.vehicleTypeRepository, analysers.vehicleTypeAnalyzerService, mapper, _logger);
-        VehicleSeasonProcessor = new VehicleSeasonProcessor(repositories.seasonRepository, analysers.seasonAnalyzerService, mapper, _logger);
-        VehicleColorProcessor = new VehicleColorProcessor(repositories.colorRepository, analysers.colorAnalyzerService, mapper, _logger);
-        VehicleMarkProcessor = new VehicleMarkProcessor(repositories.markRepository, analysers.markAnalyzerService, mapper, _logger);
-        VehicleTrafficProcessor = new VehicleTrafficProcessor(repositories.trafficRepository, analysers.trafficAnalyzerService, mapper, _logger);
-        VehicleDangerProcessor = new VehicleDangerProcessor(repositories.dangerRepository, analysers.dangerAnalyzerService, mapper, _logger);
+        VehicleRootProcessor = new VehicleTypeProcessor(repositories.vehicleTypeRepository, analysers.vehicleTypeAnalyzerService, mapper, logger);
+        VehicleSeasonProcessor = new VehicleSeasonProcessor(repositories.seasonRepository, analysers.seasonAnalyzerService, mapper, logger);
+        VehicleColorProcessor = new VehicleColorProcessor(repositories.colorRepository, analysers.colorAnalyzerService, mapper, logger);
+        VehicleMarkProcessor = new VehicleMarkProcessor(repositories.markRepository, analysers.markAnalyzerService, mapper, logger);
+        VehicleTrafficProcessor = new VehicleTrafficProcessor(repositories.trafficRepository, analysers.trafficAnalyzerService, mapper, logger);
+        VehicleDangerProcessor = new VehicleDangerProcessor(repositories.dangerRepository, analysers.dangerAnalyzerService, mapper, logger);
     }
 
     #endregion

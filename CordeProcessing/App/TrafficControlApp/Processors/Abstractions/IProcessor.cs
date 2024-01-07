@@ -11,7 +11,11 @@ public interface IProcessor<TInputData>
     //                                 
     //                                 string InputId { get; set; }
     // bool CompletedWithDependentProcessors { get; set; }
+    public bool CompletedProcessing { get; set; }
+    public bool HasDependants { get; }
     Task ProcessNextAsync(TInputData inputData);
 
     void AddDependentProcessor(IProcessor<TInputData> dependentProcessor);
+    
+    // IProcessor<TInput> GetNextProcessor()
 }

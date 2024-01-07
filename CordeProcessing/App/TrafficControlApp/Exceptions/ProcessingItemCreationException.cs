@@ -1,6 +1,5 @@
 ﻿using TrafficControlApp.Exceptions.Abstractions;
 using TrafficControlApp.Models.Items.Processing;
-using TrafficControlApp.Processors.Abstractions;
 
 namespace TrafficControlApp.Exceptions;
 
