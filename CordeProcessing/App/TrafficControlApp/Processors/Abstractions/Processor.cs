@@ -11,35 +11,24 @@ public abstract class Processor<TInput>(
 where TInput: ApplicationItem<string>
 {
     #region private fields
-
-    // protected readonly IAnalyzerService _analyzerService = _analyzerService;
-    // protected readonly IProcessingItemsStorageServiceRepository<string> _processingItemsStorageServiceRepository = _processingItemsStorageServiceRepository;
-    // protected readonly IMapper _mapper = _mapper;
-    protected readonly IEventLoggingService? EventLoggingService = eventLoggingService;
     
-    protected  Queue<IProcessor<TInput>> ProcessorsDepended = new ();
+    private readonly IEventLoggingService? EventLoggingService = eventLoggingService;
+
+    private Queue<IProcessor<TInput>> ProcessorsDepended = new ();
+    
     protected readonly Queue<IProcessor<TInput>> ProcessorsDependedCopy = new ();
 
     #endregion
 
     #region Public Properties
 
-    public bool CanRun { get; set; }
-
     public string ProcessorId  => Guid.NewGuid().ToString();
     
     public string InputId { get; set; }
-
-    // public bool CompletedWithDependentProcessors { get; set; }
     
     public bool CompletedProcessing { get; set; }
-
-    public bool HasDependants => (bool)ProcessorsDepended?.Any();
-
-    public IProcessor<TInput> CurrentCallingProcessorInCaseQueueIsEmpty { get; set; }
+    
     public IProcessor<TInput> ProcessorFromDependentQue { get; set; }
-
-    public bool NextInQueHasNoDependencies { get; set; }
 
     #endregion
     
@@ -48,12 +37,6 @@ where TInput: ApplicationItem<string>
     public event IProcessor<TInput>.NotifyNestedProcessingCompleted NestedProcessingCompleted;
         
     #endregion
-    
-    // #region Delegates
-    //
-    // public delegate void NotifyNestedProcessingCompleted();
-    //     
-    // #endregion
 
     #region Protected Abstract Methods
 
@@ -106,10 +89,6 @@ where TInput: ApplicationItem<string>
 
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
-        // if (ProcessorsDepended == null)
-        // {
-        //     ProcessorsDepended = new Queue<IProcessor<TInput>>();
-        // }
         ProcessorsDepended.Enqueue(dependentProcessor);
     }
 
@@ -117,12 +96,6 @@ where TInput: ApplicationItem<string>
 
 
     #region Private Methods
-
-    
-    private void ReconStructForNextBatch()
-    {
-        throw new NotImplementedException();
-    }
 
     protected IProcessor<TInput> GetNextProcessorFromDependants()
     {
@@ -140,19 +113,9 @@ where TInput: ApplicationItem<string>
         ProcessorFromDependentQue = GetNextProcessorFromDependants();
     }
 
-    void GetSubProcessor()
-    {
-        return;
-    }
-
     public void SetDependents(Queue<IProcessor<TInput>> dependents)
     {
         ProcessorsDepended = dependents;
-    }
-
-    public Queue<IProcessor<TInput>>  GetDependents()
-    {
-        return ProcessorsDepended;
     }
 
     #endregion
