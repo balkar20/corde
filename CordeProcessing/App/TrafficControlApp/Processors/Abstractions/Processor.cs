@@ -29,7 +29,7 @@ where TProcessionResult: IProcessionResult
     
     public bool CompletedProcessing { get; set; }
     
-    public IProcessor<TInput> ProcessorFromDependentQue { get; set; }
+    public IProcessor<TInput>? ProcessorFromDependentQue { get; set; }
 
     #endregion
     
@@ -79,9 +79,9 @@ where TProcessionResult: IProcessionResult
         }
     }
 
-    private void SetNextProcessorFromDependent(IProcessor<TInput> processorFromDependentQue)
+    private void SetNextProcessorFromDependent(IProcessor<TInput>? processorFromDependentQue)
     {
-        if (processorFromDependentQue.CompletedProcessing)
+        if (processorFromDependentQue != null && processorFromDependentQue.CompletedProcessing)
         {
             ProcessorFromDependentQue = GetNextProcessorFromDependants();
             if (CompletedProcessing)
@@ -101,7 +101,7 @@ where TProcessionResult: IProcessionResult
 
     #region Private Methods
 
-    protected IProcessor<TInput> GetNextProcessorFromDependants()
+    protected IProcessor<TInput>? GetNextProcessorFromDependants()
     {
         ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
         if (proc == null)
@@ -115,6 +115,7 @@ where TProcessionResult: IProcessionResult
     protected void SetNextProcessor()
     {
         ProcessorFromDependentQue = GetNextProcessorFromDependants();
+        //todo rise event allowing ProcessNext in Parallel
     }
 
     public void SetDependents(Queue<IProcessor<TInput>> dependents)

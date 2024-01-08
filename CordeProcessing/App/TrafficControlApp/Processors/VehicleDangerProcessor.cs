@@ -23,6 +23,7 @@ public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<str
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleDangerProcessionResult>(typeAnaliseResult);
+        await eventLoggingService.LogEvent("DANGER PROCESSED!");
         return typeProcessionResult;
     }
 

@@ -10,7 +10,6 @@ namespace TrafficControlApp.Root;
 
 public class TrafficFlowProcessStarter(
     ITrackDevice trackDevice,
-    IProcessor<Track> processorPool,
     ITrackProducer trackProducer,
     ITrackConsumer trackConsumer, 
     ApplicationConfiguration configuration)

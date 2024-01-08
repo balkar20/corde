@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using TrafficControlApp.Config;
+using TrafficControlApp.Contexts;
 using TrafficControlApp.Models;
 using TrafficControlApp.Processors.Abstractions;
 
@@ -20,14 +22,39 @@ public class ObjectPool<T>
     public void Return(T item) => _objects.Add(item);
 }
 
-public class ProcessorPool<TItem>
+public class ProcessorPool<Track>
 {
-    private IProcessor<TItem> RootProcessor;
+    private ApplicationConfiguration ApplicationConfiguration;
+    public ProcessorPool(ApplicationConfiguration applicationConfiguration)
+    {
+        ApplicationConfiguration = applicationConfiguration;
+    }
+    private IProcessor<Track> ReadyRootProcessor;
+    private ObjectPool<TrafficProcessingContext> Pool;
+    private TrafficProcessingContext _currentProcessingContext;
+    private Action _reconstruct;
+    private Func<TrafficProcessingContext> _reconstructTrafficProcessingContext;
     
     public void Foo()
     {
-        // var pool = new ObjectPool<IProcessor<Track>>(() => );
-    
-        // pool.
+        ReadyRootProcessor.NestedProcessingCompleted += ReadyRootProcessorOnNestedProcessingCompleted;
     }
+
+    private void ReadyRootProcessorOnNestedProcessingCompleted()
+    {
+        //1st step - to replace ReadyRootProcessor - get him from pool
+        var oldProcessor = _currentProcessingContext;
+        _currentProcessingContext = Pool.Get();
+        
+        //2st step - to reconstruct oldProcessor and return him to the pool
+        // Reconstruct();
+        Pool.Return(_reconstructTrafficProcessingContext());
+    }
+
+    // private void Reconstruct()
+    // {
+    //     // // reconstructAction();
+    //     // _reconstruct();
+    //     _currentProcessingContext = _reconstructTrafficProcessingContext();
+    // }
 }

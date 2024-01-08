@@ -31,6 +31,7 @@ public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<st
             var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
             var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
             var typeProcessionResult = mapper.Map<VehicleTrafficProcessionResult>(typeAnaliseResult);
+            await eventLoggingService.LogEvent("TRAFFIC PROCESSED!");
             return typeProcessionResult;
         }
 

@@ -13,7 +13,7 @@ using TrafficControlApp.Services.Storage.Services;
 
 namespace TrafficControlApp.Contexts;
 
-public class TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, ApplicationConfiguration applicationConfiguration)
+public class TrafficProcessingContext(ApplicationConfiguration applicationConfiguration)
 {
     private readonly IEventLoggingService _logger;
 

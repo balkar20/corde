@@ -40,8 +40,8 @@ public class RunTest
             new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(new SharedMemoryStorage());
 
         var track = bunchOfTracks.Tracks.Dequeue();
-        abst.CreateProcessingItem(track);
-        abst.CreateProcessingItemResult(new VehicleTypeProcessionResult()
+        await abst.CreateProcessingItem(track);
+        await abst.CreateProcessingItemResult(new VehicleTypeProcessionResult()
         {
             ItemId = track.ItemId
         });

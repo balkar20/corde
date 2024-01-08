@@ -30,6 +30,7 @@ public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<str
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleSeasonProcessionResult>(typeAnaliseResult);
+        await eventLoggingService.LogEvent("SEASON PROCESSED!");
         return typeProcessionResult;
     }
     

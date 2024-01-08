@@ -8,14 +8,14 @@ public class TrackDevice : ITrackDevice
 {
     public Task<BatchOfTracks> GiveMeTrackDataBunch(string batchType)
     {
-        return Task.FromResult<BatchOfTracks>(GetRandomData(20));
+        return Task.FromResult<BatchOfTracks>(GetRandomData(12));
     }
 
     private BatchOfTracks GetRandomData(int amount)
     {
         return new BatchOfTracks
         {
-            Tracks = GetRandomTrackData(20),
+            Tracks = GetRandomTrackData(amount),
             TimeFrame = new TimeFrame(DateTime.Now, DateTime.Now + TimeSpan.FromSeconds(50))
         };
     }

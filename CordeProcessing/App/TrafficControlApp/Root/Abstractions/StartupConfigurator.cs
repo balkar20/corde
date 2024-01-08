@@ -1,3 +1,5 @@
+using TrafficControlApp.Contexts;
+
 namespace TrafficControlApp.Root.Abstractions;
 
 public abstract class StartupConfigurator
@@ -10,6 +12,7 @@ public abstract class StartupConfigurator
         ConfigureMapping();
         ConfigureProducers();
         ConfigureLogging();
+        
         ConfigureDependentProcessors();
         ConfigureConsumers();
         // ConfigureSharedMemory();
@@ -28,5 +31,5 @@ public abstract class StartupConfigurator
 
     protected abstract void ConfigureLogging();
     
-    protected abstract void ConfigureDependentProcessors();
+    protected abstract TrafficProcessingContext  ConfigureDependentProcessors();
 }

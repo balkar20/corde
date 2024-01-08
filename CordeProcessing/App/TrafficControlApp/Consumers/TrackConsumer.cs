@@ -1,6 +1,7 @@
 using System.Threading.Tasks.Dataflow;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers.Abstractions;
+using TrafficControlApp.Contexts;
 using TrafficControlApp.Models;
 using TrafficControlApp.Processors.Abstractions;
 
@@ -9,21 +10,29 @@ namespace TrafficControlApp.Consumers;
 public class TrackConsumer : ITrackConsumer
 {
     public SortedSet<int> Treads { get; set; }
-    private IProcessor<Track> _processorPool;
+    private IProcessor<Track> _rootProcessor;
+    private TrafficProcessingContext _context;
     private ApplicationConfiguration _config;
+    private Func<TrafficProcessingContext> ConfigureDependentProcessors;
 
-    public TrackConsumer(ApplicationConfiguration config, IProcessor<Track> processorPool)
+    public TrackConsumer(ApplicationConfiguration config,  TrafficProcessingContext context, Func<TrafficProcessingContext> configureDependentProcessors)
     {
         _config = config;
-        _processorPool = processorPool;
+        _context = context;
+        this.ConfigureDependentProcessors = configureDependentProcessors;
     }
     
     public async Task ConsumeAllAsync(ISourceBlock<Track> buffer, Func<ITargetBlock<Track>, Task> startProducing)
     {
+        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
         var consumerBlock = new ActionBlock<Track>(
             track =>
             {
-                return _processorPool.ProcessNextAsync(track);
+                var ctxt = GetFreshContext();
+                
+                //todo Wait for event before ProcessNext
+                //Like NextProcessorWasSetOrNextInQueCanRun
+                return  ctxt.VehicleRootProcessor.ProcessNextAsync(track);
             },
             new ExecutionDataflowBlockOptions 
             { BoundedCapacity = _config.BoundedCapacity,
@@ -35,4 +44,21 @@ public class TrackConsumer : ITrackConsumer
 
         await consumerBlock.Completion;
     }
+
+    private TrafficProcessingContext GetFreshContext()
+    {
+        return _context;
+    }
+
+    private void RootProcessorOnNestedProcessingCompleted()
+    {
+        // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
+        _context = ConfigureDependentProcessors();
+        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+    }
+
+    // private void ConfigureDependentProcessors()
+    // {
+    //     throw new NotImplementedException();
+    // }
 }

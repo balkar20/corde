@@ -36,11 +36,12 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     
     public override async Task Run()
     {
+        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
         await new TrafficFlowProcessStarter(
                 _trackDevice, 
-                _context.VehicleRootProcessor, 
                 _trackProducer,
-                _trackConsumer, applicationConfiguration)
+                _trackConsumer, 
+                applicationConfiguration)
             .StartProcess();
     }
     
@@ -52,18 +53,13 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         {
             await _context.VehicleRootProcessor.ProcessNextAsync(bunchTrack);
         }
-
-        // await new TrafficFlowProcessStarter(
-        //         _trackDevice, 
-        //         _context.VehicleRootProcessor, 
-        //         _trackProducer,
-        //         _trackConsumer, applicationConfiguration)
-        //     .StartProcess();
     }
 
     private void RootProcessorOnNestedProcessingCompleted()
     {
+        // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         ConfigureDependentProcessors();
+        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
         _logger.Warning("Root Processor was completed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
@@ -81,7 +77,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         {
             BoundedCapacity = 100,
             ProduceSpeed = TimeSpan.FromSeconds(0.5),
-            MaxParallelConsumeCount = 4,
+            MaxParallelConsumeCount = 2,
             ConsumeSpeed = TimeSpan.FromSeconds(2),
             PropagateCompletion = true,
             VehicleTypeAnalyseConfig = new()
@@ -118,7 +114,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
 
     protected override void ConfigureConsumers()
     {
-        _trackConsumer = new TrackConsumer(applicationConfiguration, _context.VehicleRootProcessor);
+        _trackConsumer = new TrackConsumer(applicationConfiguration, _context, ConfigureDependentProcessors);
     }
 
     protected override void ConfigureMapping()
@@ -130,9 +126,9 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         _mapper = config.CreateMapper();
     }
 
-    protected override void ConfigureDependentProcessors()
+    protected override TrafficProcessingContext ConfigureDependentProcessors()
     {
-        _context = new TrafficProcessingContext(new SharedMemoryStorage(), applicationConfiguration);
+        _context = new TrafficProcessingContext(applicationConfiguration);
         
         _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         
@@ -146,7 +142,30 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);                                
         _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
         _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor); 
+        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
+
+        return _context;
+    }
+
+    protected TrafficProcessingContext ConstructProcessionContext()
+    {
+        var ctx = new TrafficProcessingContext(applicationConfiguration);
+        _context = new TrafficProcessingContext(applicationConfiguration);
+        
+        ctx.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
+        
+        //TypeDependant
+        ctx.VehicleRootProcessor.AddDependentProcessor(ctx.VehicleMarkProcessor);
+        ctx.VehicleRootProcessor.AddDependentProcessor(ctx.VehicleDangerProcessor);
+        
+        //MarkDependant                                  
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
+        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);                                
+        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleColorProcessor);
+        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleSeasonProcessor);
+        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleTrafficProcessor);
+        return ctx;
     }
     
     protected override void ConfigureLogging()
