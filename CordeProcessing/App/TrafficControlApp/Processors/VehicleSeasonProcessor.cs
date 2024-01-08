@@ -10,11 +10,11 @@ using TrafficControlApp.Services.Events.Abstractions;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<string, Track> processingItemsStorageServiceRepository,
+public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleSeasonProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
     IEventLoggingService eventLoggingService)
-    : Processor<Track>(eventLoggingService)
+    : Processor<Track, VehicleSeasonProcessionResult>(eventLoggingService)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
@@ -31,6 +31,12 @@ public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<str
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleSeasonProcessionResult>(typeAnaliseResult);
         return typeProcessionResult;
+    }
+    
+    
+    protected override async Task SetProcessionResult(VehicleSeasonProcessionResult result)
+    {
+        await processingItemsStorageServiceRepository.CreateProcessingItemResult(result);
     }
 
     private async Task WorkWithDependentData(string trackId)

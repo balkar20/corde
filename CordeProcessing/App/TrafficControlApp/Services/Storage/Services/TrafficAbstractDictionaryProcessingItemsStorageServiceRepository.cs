@@ -6,7 +6,7 @@ using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Services.Storage.Services;
 
-public  class TrafficAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
+public  class TrafficAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult>
 {
     private ISharedMemoryStorage sharedMemoryStorage;
 

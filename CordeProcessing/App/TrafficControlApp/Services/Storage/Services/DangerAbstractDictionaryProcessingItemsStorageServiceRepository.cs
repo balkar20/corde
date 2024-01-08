@@ -6,7 +6,7 @@ using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Services.Storage.Services;
 
-public  class DangerAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
+public  class DangerAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult>
 {
     private ISharedMemoryStorage sharedMemoryStorage;
     
@@ -25,13 +25,13 @@ public  class DangerAbstractDictionaryProcessingItemsStorageServiceRepository: I
     }
 
 
-    public async Task CreateProcessingItemResult(VehicleDangerProcessionResult result)
-    {
-        if (!sharedMemoryStorage.ProcessionDangerResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
-        {
-            throw new ProcessingItemResultCreationException(result);
-        }
-    }
+    // public async Task CreateProcessingItemResult(VehicleDangerProcessionResult result)
+    // {
+    //     if (!sharedMemoryStorage.ProcessionDangerResultStorage.TryAdd(Guid.NewGuid().ToString(), result))
+    //     {
+    //         throw new ProcessingItemResultCreationException(result);
+    //     }
+    // }
 
     public virtual async Task<Track> GetProcessingItem(string processItemKey)
     {
@@ -44,4 +44,18 @@ public  class DangerAbstractDictionaryProcessingItemsStorageServiceRepository: I
         sharedMemoryStorage.ProcessionDangerResultStorage.TryGetValue(processItemKey, out var result);
         return result;
     }
+
+    public async Task CreateProcessingItemResult(VehicleDangerProcessionResult processionResult)
+    {
+        if (!sharedMemoryStorage.ProcessionDangerResultStorage.TryAdd(Guid.NewGuid().ToString(), processionResult))
+        {
+            throw new ProcessingItemResultCreationException(processionResult);
+        }
+    }
+
+
+    // public Task CreateProcessingItemResult<VehicleDangerProcessionResult>(VehicleDangerProcessionResult processionResult)
+    // {
+
+    // }
 }

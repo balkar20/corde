@@ -22,12 +22,12 @@ public class ObjectPool<T>
 
 public class ProcessorPool<TItem>
 {
-    // private IProcessor<TItem> RootProcessor;
-    //
-    // public void Foo()
-    // {
-    //     var pool = new ObjectPool<IProcessor<Track>>(() => );
-    //
-    //     pool.
-    // }
+    private IProcessor<TItem> RootProcessor;
+    
+    public void Foo()
+    {
+        // var pool = new ObjectPool<IProcessor<Track>>(() => );
+    
+        // pool.
+    }
 }

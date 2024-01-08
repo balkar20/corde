@@ -6,7 +6,7 @@ using TrafficControlApp.Services.Storage.Abstractions;
 
 namespace TrafficControlApp.Services.Storage.Services;
 
-public  class ColorAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track>
+public  class ColorAbstractDictionaryProcessingItemsStorageServiceRepository: IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult>
 {
     private ISharedMemoryStorage sharedMemoryStorage;
 
@@ -31,6 +31,11 @@ public  class ColorAbstractDictionaryProcessingItemsStorageServiceRepository: IP
             throw new ProcessingItemResultCreationException(result);
         }
     }
+    
+        public Task CreateProcessingItemResult(IProcessionResult processionResult)
+    {
+        throw new NotImplementedException();
+    }
 
     public virtual async Task<Track> GetProcessingItem(string processItemKey)
     {
@@ -43,4 +48,5 @@ public  class ColorAbstractDictionaryProcessingItemsStorageServiceRepository: IP
         sharedMemoryStorage.ProcessionColorResultStorage.TryGetValue(processItemKey, out var result);
         return result;
     }
+    
 }

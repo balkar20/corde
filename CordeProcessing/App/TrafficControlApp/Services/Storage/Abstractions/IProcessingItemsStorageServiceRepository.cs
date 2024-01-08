@@ -2,10 +2,11 @@
 
 namespace TrafficControlApp.Services;
 
-public interface IProcessingItemsStorageServiceRepository<TProcessingItemKey, TProcessingItem>
+public interface IProcessingItemsStorageServiceRepository<TProcessingItemKey, TProcessingItem, TProcessingItemResult>
 {
     Task CreateProcessingItem(TProcessingItem processItem);
     Task<TProcessingItem> GetProcessingItem(TProcessingItemKey processItemKey);
     Task<IProcessionResult> GetProcessingItemResult(TProcessingItemKey processItemKey);
+    Task CreateProcessingItemResult(TProcessingItemResult processionResult);
 
 }

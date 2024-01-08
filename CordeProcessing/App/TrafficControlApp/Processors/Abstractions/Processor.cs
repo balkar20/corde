@@ -5,10 +5,11 @@ using TrafficControlApp.Services.Events.Abstractions;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
-public abstract class Processor<TInput>(
+public abstract class Processor<TInput, TProcessionResult>(
         IEventLoggingService? eventLoggingService)
     : IProcessor<TInput>
 where TInput: ApplicationItem<string>
+where TProcessionResult: IProcessionResult
 {
     #region private fields
     
@@ -41,6 +42,9 @@ where TInput: ApplicationItem<string>
     #region Protected Abstract Methods
 
     protected abstract Task<IProcessionResult> ProcessLogic(TInput inputData);
+    
+    
+    protected abstract Task SetProcessionResult(TProcessionResult result);
 
     #endregion
 

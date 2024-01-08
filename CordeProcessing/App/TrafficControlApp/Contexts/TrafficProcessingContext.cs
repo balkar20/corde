@@ -1,6 +1,7 @@
 using AutoMapper;
 using TrafficControlApp.Config;
 using TrafficControlApp.Models;
+using TrafficControlApp.Models.Results;
 using TrafficControlApp.Processors;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
@@ -68,12 +69,12 @@ public class TrafficProcessingContext(ISharedMemoryStorage sharedMemoryStorage, 
 
         
     private (
-        IProcessingItemsStorageServiceRepository<String,  Track> vehicleTypeRepository,
-        IProcessingItemsStorageServiceRepository<String,  Track> colorRepository,
-        IProcessingItemsStorageServiceRepository<String,  Track> seasonRepository,
-        IProcessingItemsStorageServiceRepository<String,  Track> markRepository,
-        IProcessingItemsStorageServiceRepository<String,  Track> trafficRepository,
-        IProcessingItemsStorageServiceRepository<String,  Track> dangerRepository
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleTypeProcessionResult> vehicleTypeRepository,
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleColorProcessionResult> colorRepository,
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleSeasonProcessionResult> seasonRepository,
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleMarkProcessionResult> markRepository,
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleTrafficProcessionResult> trafficRepository,
+        IProcessingItemsStorageServiceRepository<String,  Track, VehicleDangerProcessionResult> dangerRepository
         ) GetRepositories()
     {
         var aso = new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig);

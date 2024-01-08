@@ -10,11 +10,11 @@ using TrafficControlApp.Services.Events.Abstractions;
 
 namespace TrafficControlApp.Processors;
 
-public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track> processingItemsStorageServiceRepository,
+public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
     IEventLoggingService eventLoggingService)
-    : Processor<Track>(eventLoggingService)
+    : Processor<Track, VehicleTrafficProcessionResult>(eventLoggingService)
 {
     
     // public VehicleTrafficProcessor(ISharedMemoryVehicleService sharedMemoryService,
@@ -34,7 +34,12 @@ public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<st
             return typeProcessionResult;
         }
 
-    #endregion
+        protected override async Task SetProcessionResult(VehicleTrafficProcessionResult result)
+        {
+            await processingItemsStorageServiceRepository.CreateProcessingItemResult(result);
+        }
+
+        #endregion
 
    
     #region Private Methods
