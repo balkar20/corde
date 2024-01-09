@@ -7,6 +7,7 @@ using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors;
 
@@ -23,7 +24,7 @@ public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<str
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleDangerProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent("DANGER PROCESSED!");
+        await eventLoggingService.LogEvent("DANGER", EventLoggingTypes.ProcessedEvent);
         return typeProcessionResult;
     }
 

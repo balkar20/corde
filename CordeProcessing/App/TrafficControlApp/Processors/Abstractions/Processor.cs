@@ -1,7 +1,9 @@
 using System.Collections.Frozen;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TrafficControlApp.Models.Items.Base;
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
@@ -16,8 +18,9 @@ where TProcessionResult: IProcessionResult
     private readonly IEventLoggingService? EventLoggingService = eventLoggingService;
 
     private Queue<IProcessor<TInput>> ProcessorsDepended = new ();
-    
-    protected readonly Queue<IProcessor<TInput>> ProcessorsDependedCopy = new ();
+    // private object lockObj = new ();
+    private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+    private int counter = 0;
 
     #endregion
 
@@ -26,16 +29,26 @@ where TProcessionResult: IProcessionResult
     public string ProcessorId  => Guid.NewGuid().ToString();
     
     public string InputId { get; set; }
+    public string ProcessorName { get; set; }
     
-    public bool CompletedProcessing { get; set; }
+    public bool IsCompletedNestedProcessing { get; set; }
+    public bool IsCompletedCurrentProcessing { get; set; }
     
+    public bool IsStartedSelfProcessing { get; set; }
+
     public IProcessor<TInput>? ProcessorFromDependentQue { get; set; }
+    public IProcessor<TInput>? ParentProcessor { get; set; }
 
     #endregion
     
     #region Events
 
-    public event IProcessor<TInput>.NotifyNestedProcessingCompleted NestedProcessingCompleted;
+    public event IProcessor<TInput>.NotifyNestedProcessingCompleted NestedProcessingCompletedEvent;
+    public event IProcessor<TInput>.NotifyCurrentProcessingCompleted CurrentProcessingCompletedEvent =  (s) =>
+    {
+        s.IsCompletedCurrentProcessing = true;
+         return Task.CompletedTask;
+    };
         
     #endregion
 
@@ -52,41 +65,83 @@ where TProcessionResult: IProcessionResult
 
     public async Task ProcessNextAsync(TInput inputData)
     {
-        try
-        {
-            if (this.InputId != inputData.ItemId)
+        IsStartedSelfProcessing = true;
+        ProcessorName = this.GetType().FullName;
+            try
             {
-                EventLoggingService?.LogEvent($"ProcessNextAsync New item Id: {inputData.ItemId}");
-                this.InputId = inputData.ItemId;
-            } 
-            if (ProcessorFromDependentQue != null)
-            {
-                await ProcessorFromDependentQue.ProcessNextAsync(inputData);
+                if (ProcessorFromDependentQue != null)
+                {
+                    ProcessorFromDependentQue.CurrentProcessingCompletedEvent += ProcessorFromDependentQueOnCurrentProcessingCompletedEvent;
+                    eventLoggingService.LogEvent("CurrentProcessingCompletedEvent",
+                        EventLoggingTypes.SubscribingToEvent, ProcessorName);
+                }
                 
-                SetNextProcessorFromDependent(ProcessorFromDependentQue);
-                return;
+                EventLoggingService.LogEvent($"Entering {ProcessorName}", EventLoggingTypes.ProcessionInformation);
+                await semaphoreSlim.WaitAsync();
+                EventLoggingService.LogEvent($"Entered {ProcessorName}", EventLoggingTypes.ProcessionInformation);
+                try
+                {
+                    await DoProcessionOnCurrentProcessingCompletedAsync(inputData);
+                    
+                }
+                finally
+                {
+                    EventLoggingService.LogEvent($"Releasing {ProcessorName}", EventLoggingTypes.ProcessionInformation);
+                    semaphoreSlim.Release();
+                    EventLoggingService.LogEvent($"Released {ProcessorName}", EventLoggingTypes.ProcessionInformation);
+                }
             }
-            
-            
-            var processionResult = await ProcessLogic(inputData);
-            SetNextProcessor();
-            await EventLoggingService.LogEvent($"PS: {this.ProcessorId} | ItemId: {this.InputId}, {this.ProcessorId}");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
     }
 
-    private void SetNextProcessorFromDependent(IProcessor<TInput>? processorFromDependentQue)
+    private async Task ProcessorFromDependentQueOnCurrentProcessingCompletedEvent(IProcessor<TInput> processor)
     {
-        if (processorFromDependentQue != null && processorFromDependentQue.CompletedProcessing)
+        
+    }
+
+    private async Task DoProcessionOnCurrentProcessingCompletedAsync(TInput inputData)
+    {
+        if (ProcessorFromDependentQue != null && ProcessorFromDependentQue.IsCompletedCurrentProcessing && ProcessorFromDependentQue.IsStartedSelfProcessing)
+        {
+            await EventLoggingService.LogEvent(ProcessorName,
+                EventLoggingTypes.CallMethodInProcessorWithCompletedDependant, ProcessorFromDependentQue.ProcessorName);
+            return;
+        }
+        
+        if (ProcessorFromDependentQue != null && !ProcessorFromDependentQue.IsCompletedCurrentProcessing && !ProcessorFromDependentQue.IsStartedSelfProcessing)
+        {
+            await ProcessorFromDependentQue.ProcessNextAsync(inputData);
+                
+            SetNextProcessorFromDependent(ProcessorFromDependentQue);
+            return;
+        }
+        
+        var processionResult = await ProcessLogic(inputData);
+        IsCompletedCurrentProcessing = true;
+        await CurrentProcessingCompletedEvent(this);
+            
+        SetNextProcessor();
+        await EventLoggingService.LogEvent($"Leave DPA: {this.ProcessorId} | ItemId: {this.InputId}, {this.ProcessorId}", EventLoggingTypes.ProcessionInformation);
+    }
+
+    private void SetNextProcessorFromDependent(IProcessor<TInput> processorFromDependentQue)
+    {
+        if (processorFromDependentQue.IsCompletedNestedProcessing)
         {
             ProcessorFromDependentQue = GetNextProcessorFromDependants();
-            if (CompletedProcessing)
+            if (IsCompletedNestedProcessing)
             {
-                NestedProcessingCompleted?.Invoke();
+                NestedProcessingCompletedEvent?.Invoke();
+                return;
+            }
+
+            if (IsCompletedCurrentProcessing)
+            {
+                CurrentProcessingCompletedEvent.Invoke(this);
             }
         }
     }
@@ -94,6 +149,12 @@ where TProcessionResult: IProcessionResult
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
         ProcessorsDepended.Enqueue(dependentProcessor);
+        dependentProcessor.ParentProcessor = this;
+    }
+
+    protected async Task SetTrue(TInput input)
+    {
+        IsCompletedCurrentProcessing = true;
     }
 
     #endregion
@@ -106,7 +167,7 @@ where TProcessionResult: IProcessionResult
         ProcessorsDepended.TryDequeue(out IProcessor<TInput>? proc);
         if (proc == null)
         {
-            CompletedProcessing = true;
+            IsCompletedNestedProcessing = true;
         }
 
         return proc;

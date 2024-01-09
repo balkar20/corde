@@ -24,14 +24,14 @@ public class TrackConsumer : ITrackConsumer
     
     public async Task ConsumeAllAsync(ISourceBlock<Track> buffer, Func<ITargetBlock<Track>, Task> startProducing)
     {
-        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
+        // _context.VehicleRootProcessor.CurrentProcessingCompleted += VehicleRootProcessorOnCurrentProcessingCompleted;
         var consumerBlock = new ActionBlock<Track>(
             track =>
             {
                 var ctxt = GetFreshContext();
                 
                 //todo Wait for event before ProcessNext
-                //Like NextProcessorWasSetOrNextInQueCanRun
                 return  ctxt.VehicleRootProcessor.ProcessNextAsync(track);
             },
             new ExecutionDataflowBlockOptions 
@@ -44,6 +44,7 @@ public class TrackConsumer : ITrackConsumer
 
         await consumerBlock.Completion;
     }
+    
 
     private TrafficProcessingContext GetFreshContext()
     {
@@ -54,7 +55,7 @@ public class TrackConsumer : ITrackConsumer
     {
         // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         _context = ConfigureDependentProcessors();
-        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
     }
 
     // private void ConfigureDependentProcessors()

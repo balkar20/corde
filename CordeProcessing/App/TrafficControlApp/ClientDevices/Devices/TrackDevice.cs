@@ -8,7 +8,7 @@ public class TrackDevice : ITrackDevice
 {
     public Task<BatchOfTracks> GiveMeTrackDataBunch(string batchType)
     {
-        return Task.FromResult<BatchOfTracks>(GetRandomData(12));
+        return Task.FromResult<BatchOfTracks>(GetRandomData(4));
     }
 
     private BatchOfTracks GetRandomData(int amount)

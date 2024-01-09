@@ -7,6 +7,7 @@ using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors;
 
@@ -29,7 +30,8 @@ public class VehicleMarkProcessor
         // var typeProcessionResult = 
         var result =  mapper.Map<VehicleMarkProcessionResult>(typeAnaliseResult);
         // sharedMemoryService.VehicleMarkProcessResultDictionary.Add(inputData.ItemId, result);
-        await eventLoggingService.LogEvent("MARK PROCESSED!");
+        await eventLoggingService.LogEvent("MARK", EventLoggingTypes.ProcessedEvent);
+
         return result;
     }
 

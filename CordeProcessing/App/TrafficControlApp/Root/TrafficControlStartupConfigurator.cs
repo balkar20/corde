@@ -36,7 +36,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     
     public override async Task Run()
     {
-        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
         await new TrafficFlowProcessStarter(
                 _trackDevice, 
                 _trackProducer,
@@ -48,7 +48,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     public  async Task Test()
     {
         var bunch =  await _trackDevice.GiveMeTrackDataBunch("Type");
-        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
         foreach (var bunchTrack in bunch.Tracks)
         {
             await _context.VehicleRootProcessor.ProcessNextAsync(bunchTrack);
@@ -59,7 +59,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     {
         // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         ConfigureDependentProcessors();
-        _context.VehicleRootProcessor.NestedProcessingCompleted += RootProcessorOnNestedProcessingCompleted;
+        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
         _logger.Warning("Root Processor was completed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
@@ -77,7 +77,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         {
             BoundedCapacity = 100,
             ProduceSpeed = TimeSpan.FromSeconds(0.5),
-            MaxParallelConsumeCount = 2,
+            MaxParallelConsumeCount = 4,
             ConsumeSpeed = TimeSpan.FromSeconds(2),
             PropagateCompletion = true,
             VehicleTypeAnalyseConfig = new()
@@ -135,6 +135,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleDangerProcessor);
+        
         
         //MarkDependant                                  
         // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);

@@ -7,6 +7,7 @@ var startUpConfigurator = new TrafficControlStartupConfigurator();
 try
 {
     await startUpConfigurator.Run();
+    Console.ReadLine();
 }
 catch (ProcessingItemCreationException ex)
 {

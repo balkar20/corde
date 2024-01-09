@@ -7,6 +7,7 @@ using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors;
 
@@ -30,7 +31,8 @@ public class VehicleTypeProcessor
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleTypeProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent("TYPE PROCESSED!");
+        await eventLoggingService.LogEvent("TYPE", EventLoggingTypes.ProcessedEvent);
+
         return typeProcessionResult;
     }
 

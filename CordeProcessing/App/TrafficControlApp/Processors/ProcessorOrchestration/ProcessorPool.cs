@@ -37,7 +37,7 @@ public class ProcessorPool<Track>
     
     public void Foo()
     {
-        ReadyRootProcessor.NestedProcessingCompleted += ReadyRootProcessorOnNestedProcessingCompleted;
+        ReadyRootProcessor.NestedProcessingCompletedEvent += ReadyRootProcessorOnNestedProcessingCompleted;
     }
 
     private void ReadyRootProcessorOnNestedProcessingCompleted()

@@ -7,6 +7,7 @@ using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors;
 
@@ -19,18 +20,11 @@ public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<str
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
-        // var vehicles = await _sharedMemoryService.GetVehicleDataByTrackId(inputData.ItemId);
-        //
-        // foreach (var vehicle in vehicles)
-        // {
-        //     var vehicleType = vehicle.VehicleType;
-        //     
-        // }
-        
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleSeasonProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent("SEASON PROCESSED!");
+
+        await eventLoggingService.LogEvent("SEASON", EventLoggingTypes.ProcessedEvent);
         return typeProcessionResult;
     }
     
