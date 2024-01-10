@@ -51,7 +51,7 @@ public class TrackConsumer : ITrackConsumer
         return _context;
     }
 
-    private void RootProcessorOnNestedProcessingCompleted()
+    private async Task RootProcessorOnNestedProcessingCompleted()
     {
         // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
         _context = ConfigureDependentProcessors();

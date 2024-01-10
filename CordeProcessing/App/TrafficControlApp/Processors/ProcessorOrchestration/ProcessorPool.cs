@@ -37,10 +37,10 @@ public class ProcessorPool<Track>
     
     public void Foo()
     {
-        ReadyRootProcessor.NestedProcessingCompletedEvent += ReadyRootProcessorOnNestedProcessingCompleted;
+        ReadyRootProcessor.NestedProcessingCompletedEvent +=  ReadyRootProcessorOnNestedProcessingCompleted;
     }
 
-    private void ReadyRootProcessorOnNestedProcessingCompleted()
+    private async Task ReadyRootProcessorOnNestedProcessingCompleted()
     {
         //1st step - to replace ReadyRootProcessor - get him from pool
         var oldProcessor = _currentProcessingContext;

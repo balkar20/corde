@@ -11,7 +11,7 @@ public interface IProcessor<TInputData>
     void AddDependentProcessor(IProcessor<TInputData> dependentProcessor);
     event NotifyNestedProcessingCompleted NestedProcessingCompletedEvent;
     event NotifyCurrentProcessingCompleted CurrentProcessingCompletedEvent;
-    delegate void NotifyNestedProcessingCompleted();
+    delegate Task NotifyNestedProcessingCompleted();
     delegate Task NotifyCurrentProcessingCompleted(IProcessor<TInputData> processor);
     // IProcessor<TInput> GetNextProcessor()
 }

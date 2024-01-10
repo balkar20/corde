@@ -21,10 +21,11 @@ public class EventLoggingService: IEventLoggingService
             EventLoggingTypes.CallMethodInProcessor => $"CallMethodInProcessor Message with String :{eventDataString}",
             EventLoggingTypes.CallMethodInProcessorWithCondition => $"CallMethodInProcessorWithCondition Message with String :{eventDataString} and condition:{additional}",
             EventLoggingTypes.CallMethodInProcessorWithCompletedDependant => $"CallMethodInProcessorWithCompletedDependant  with thisName :{eventDataString} and DeperndantName:{additional}",
-            EventLoggingTypes.HandlingEvent => $"HandlingEvent Message with String :{eventDataString}",
+            EventLoggingTypes.HandlingEvent => $"HandlingEvent Message with String Of  :{eventDataString}, processor called = {additional}",
             EventLoggingTypes.RaisingEvent => $"RaisingEvent Message with String :{eventDataString}",
             EventLoggingTypes.ProcessionInformation => $"ProcessionInformation Message with String :{eventDataString}",
             EventLoggingTypes.SubscribingToEvent => $"SubscribingToEvent  with Name :{eventDataString} and ProcessorName: {additional}",
+            EventLoggingTypes.ThreadIdLogging => $"ThreadId :{eventDataString} for Processor : {additional}",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
         _logger.Information(message);
