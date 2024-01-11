@@ -20,11 +20,10 @@ public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<str
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
         // var vehicles = await _sharedMemoryService.ProcessingItemsStorageService.G(inputData.ItemId);
-        
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleDangerProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent("DANGER", EventLoggingTypes.ProcessedEvent);
+        await eventLoggingService.LogEvent($"DANGER + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
         return typeProcessionResult;
     }
 

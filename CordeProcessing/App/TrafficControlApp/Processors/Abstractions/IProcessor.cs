@@ -10,6 +10,7 @@ public interface IProcessor<TInputData>
     
     string ProcessorName { get; set; }
     IProcessor<TInputData>? ParentProcessor { get; set; }
+    IProcessor<TInputData>? ProcessorFromDependentQue { get; set; }
     Task ProcessNextAsync(TInputData inputData);
     void AddDependentProcessor(IProcessor<TInputData> dependentProcessor);
     event NotifyNestedProcessingCompleted NestedProcessingCompletedEvent;

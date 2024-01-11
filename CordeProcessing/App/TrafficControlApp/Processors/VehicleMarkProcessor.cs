@@ -30,7 +30,7 @@ public class VehicleMarkProcessor
         // var typeProcessionResult = 
         var result =  mapper.Map<VehicleMarkProcessionResult>(typeAnaliseResult);
         // sharedMemoryService.VehicleMarkProcessResultDictionary.Add(inputData.ItemId, result);
-        await eventLoggingService.LogEvent("MARK", EventLoggingTypes.ProcessedEvent);
+        await eventLoggingService.LogEvent($"MARK + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
 
         return result;
     }

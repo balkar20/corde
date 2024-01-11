@@ -77,7 +77,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         {
             BoundedCapacity = 100,
             ProduceSpeed = TimeSpan.FromSeconds(0.5),
-            MaxParallelConsumeCount = 6,
+            MaxParallelConsumeCount = 9,
             ConsumeSpeed = TimeSpan.FromSeconds(2),
             PropagateCompletion = true,
             VehicleTypeAnalyseConfig = new()
@@ -98,11 +98,13 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
             },
             VehicleDangerAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(2),
+                TimeForAnalyse = TimeSpan.FromSeconds(30),
+                // TimeForAnalyse = TimeSpan.FromSeconds(20),
             },
             VehicleMarkAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(2),
+                // TimeForAnalyse = TimeSpan.FromSeconds(20),
+                TimeForAnalyse = TimeSpan.FromSeconds(30),
             }
         };
     }

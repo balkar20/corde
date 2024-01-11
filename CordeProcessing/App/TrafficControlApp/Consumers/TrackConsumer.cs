@@ -41,8 +41,12 @@ public class TrackConsumer : ITrackConsumer
             { PropagateCompletion = _config.PropagateCompletion });
 
         await startProducing(consumerBlock);
-
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         await consumerBlock.Completion;
+        watch.Stop();
+        var elapsedMs = watch.ElapsedMilliseconds;
+        var sec = TimeSpan.FromMilliseconds(elapsedMs).TotalSeconds;
+        Console.WriteLine($"!!!!!!!!!!!!!!!Total Time:{sec} SECONDS!!!!!!!!!!!!!!!!!");
     }
     
 

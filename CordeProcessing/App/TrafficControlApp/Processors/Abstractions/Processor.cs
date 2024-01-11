@@ -20,7 +20,7 @@ where TProcessionResult: IProcessionResult
     private readonly IEventLoggingService? EventLoggingService = eventLoggingService;
 
     private Queue<IProcessor<TInput>> ProcessorsDepended = new ();
-    private static SyncContext semaphoreSlim = new ();
+    private SyncContext semaphoreSlim = new ();
     private int counter = 0;
     private bool locked;
 
@@ -68,6 +68,7 @@ where TProcessionResult: IProcessionResult
         ProcessorName = this.GetType().FullName;
         var threadId = Thread.CurrentThread.ManagedThreadId;
         await EventLoggingService.LogEvent(threadId.ToString(), EventLoggingTypes.ThreadIdLogging, $"|||{ProcessorName}||| with dependant: {ProcessorFromDependentQue?.ProcessorName}");
+        await EventLoggingService.LogEvent($"Time {DateTime.Now}", EventLoggingTypes.ProcessionInformation, $"|||{ProcessorName}");
 
         await semaphoreSlim.WaitLock();
         try
@@ -82,12 +83,17 @@ where TProcessionResult: IProcessionResult
             if (IsStartedSelfProcessing && IsCompletedCurrentProcessing && IsRoot)
             {
                 var nextInQueProcessor = GetNextProcessorFromDependants();
-                if (nextInQueProcessor == null)
+                if (nextInQueProcessor == null && ProcessorFromDependentQue != this && ProcessorFromDependentQue != null)
                 {
-                    IsCompletedNestedProcessing = true;
-                        await NestedProcessingCompletedEvent();
+                    await ProcessorFromDependentQue.ProcessNextAsync(inputData);
                     return;
                 }
+                // if (nextInQueProcessor == null && ProcessorFromDependentQue != null && ProcessorFromDependentQue.IsCompletedNestedProcessing)
+                // {
+                //     IsCompletedNestedProcessing = true;
+                //         await NestedProcessingCompletedEvent();
+                //     return;
+                // }
                 await nextInQueProcessor.ProcessNextAsync(inputData);
                 // locked = true;
             }
@@ -95,8 +101,18 @@ where TProcessionResult: IProcessionResult
             if (!IsStartedSelfProcessing && !IsCompletedCurrentProcessing && IsRoot)
             {
                 IsStartedSelfProcessing = true;
-                await ProcessLogic(inputData);
-                this.ParentProcessor = this;
+                if (ProcessorFromDependentQue != null && ProcessorFromDependentQue != this)
+                {
+                    await ProcessorFromDependentQue.ProcessNextAsync(inputData);
+                }
+                else
+                {
+                    await ProcessLogic(inputData);
+                    if (ParentProcessor != null)
+                    {
+                        ParentProcessor.ProcessorFromDependentQue = this; 
+                    }
+                }
                 IsCompletedCurrentProcessing = true;
             }
         }
