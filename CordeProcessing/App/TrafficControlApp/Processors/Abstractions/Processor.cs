@@ -1,6 +1,8 @@
 using System.Collections.Frozen;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TrafficControlApp.Contexts;
 using TrafficControlApp.Models.Items.Base;
+using TrafficControlApp.Models.Results.Analyse;
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Events.Data.Enums;
@@ -18,8 +20,9 @@ where TProcessionResult: IProcessionResult
     private readonly IEventLoggingService? EventLoggingService = eventLoggingService;
 
     private Queue<IProcessor<TInput>> ProcessorsDepended = new ();
-    private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+    private static SyncContext semaphoreSlim = new ();
     private int counter = 0;
+    private bool locked;
 
     #endregion
 
@@ -28,6 +31,7 @@ where TProcessionResult: IProcessionResult
     public string ProcessorId  => Guid.NewGuid().ToString();
     
     public string InputId { get; set; }
+    public bool IsRoot { get; set; }
     public string ProcessorName { get; set; }
     
     public bool IsCompletedNestedProcessing { get; set; }
@@ -44,6 +48,7 @@ where TProcessionResult: IProcessionResult
 
     public event IProcessor<TInput>.NotifyNestedProcessingCompleted NestedProcessingCompletedEvent;
     public event IProcessor<TInput>.NotifyCurrentProcessingCompleted CurrentProcessingCompletedEvent;
+    public event IProcessor<TInput>.NotifyParentProcessingCompleted ParentProcessingCompletedEvent;
         
     #endregion
 
@@ -60,40 +65,45 @@ where TProcessionResult: IProcessionResult
 
     public async Task ProcessNextAsync(TInput inputData)
     {
-        IsStartedSelfProcessing = true;
         ProcessorName = this.GetType().FullName;
         var threadId = Thread.CurrentThread.ManagedThreadId;
         await EventLoggingService.LogEvent(threadId.ToString(), EventLoggingTypes.ThreadIdLogging, $"|||{ProcessorName}||| with dependant: {ProcessorFromDependentQue?.ProcessorName}");
-            try
+
+        await semaphoreSlim.WaitLock();
+        try
+        {
+            if (!IsRoot)
             {
-                if (ProcessorFromDependentQue != null)
-                {
-                    ProcessorFromDependentQue.CurrentProcessingCompletedEvent += async (t) => await ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler(t);
-                    ProcessorFromDependentQue.NestedProcessingCompletedEvent += async () => await NestedProcessingCompletedEventHandler();
-                    eventLoggingService.LogEvent("CurrentProcessingCompletedEvent",
-                        EventLoggingTypes.SubscribingToEvent, ProcessorName);
-                }
-                
-                EventLoggingService.LogEvent($"Entering {ProcessorName}", EventLoggingTypes.ProcessionInformation);
-                await semaphoreSlim.WaitAsync();
-                EventLoggingService.LogEvent($"Entered {ProcessorName}", EventLoggingTypes.ProcessionInformation);
-                try
-                {
-                    await DoProcessionOnCurrentProcessingCompletedAsync(inputData);
-                    
-                }
-                finally
-                {
-                    EventLoggingService.LogEvent($"Releasing {ProcessorName}", EventLoggingTypes.ProcessionInformation);
-                    semaphoreSlim.Release();
-                    EventLoggingService.LogEvent($"Released {ProcessorName}", EventLoggingTypes.ProcessionInformation);
-                }
+                IsStartedSelfProcessing = true;
+                await ProcessLogic(inputData);
+                return;
             }
-            catch (Exception e)
+            
+            if (IsStartedSelfProcessing && IsCompletedCurrentProcessing && IsRoot)
             {
-                Console.WriteLine(e);
-                throw;
+                var nextInQueProcessor = GetNextProcessorFromDependants();
+                if (nextInQueProcessor == null)
+                {
+                    IsCompletedNestedProcessing = true;
+                        await NestedProcessingCompletedEvent();
+                    return;
+                }
+                await nextInQueProcessor.ProcessNextAsync(inputData);
+                // locked = true;
             }
+            
+            if (!IsStartedSelfProcessing && !IsCompletedCurrentProcessing && IsRoot)
+            {
+                IsStartedSelfProcessing = true;
+                await ProcessLogic(inputData);
+                this.ParentProcessor = this;
+                IsCompletedCurrentProcessing = true;
+            }
+        }
+        finally
+        {
+            semaphoreSlim.ReleaseLock(this);
+        }
     }
 
     #region Event Handlers
@@ -171,7 +181,14 @@ where TProcessionResult: IProcessionResult
     public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
     {
         ProcessorsDepended.Enqueue(dependentProcessor);
+        this.IsRoot = true;
+        // dependentProcessor.ParentProcessingCompletedEvent += ParentProcessorOnCurrentProcessingCompletedEventHandler;
         dependentProcessor.ParentProcessor = this;
+    }
+
+    private async Task ParentProcessorOnCurrentProcessingCompletedEventHandler(TInput input)
+    {
+        await this.ProcessNextAsync(input);
     }
 
     protected async Task SetTrue(TInput input)
