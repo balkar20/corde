@@ -13,7 +13,7 @@ public class EventLoggingService: IEventLoggingService
         _logger = logger;
     }
 
-    public async Task LogEvent(string eventDataString, EventLoggingTypes type, string additional = "")
+    public async Task Log(string eventDataString, EventLoggingTypes type, string additional = "")
     {
         var message = type switch
         {
@@ -26,6 +26,7 @@ public class EventLoggingService: IEventLoggingService
             EventLoggingTypes.ProcessionInformation => $"ProcessionInformation Message with String :{eventDataString}",
             EventLoggingTypes.SubscribingToEvent => $"SubscribingToEvent  with Name :{eventDataString} and ProcessorName: {additional}",
             EventLoggingTypes.ThreadIdLogging => $"ThreadId :{eventDataString} for Processor : {additional}",
+            EventLoggingTypes.ExceptionKindEvent => $"ExceptionKindEvent :{eventDataString} for Processor : {additional}",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
         _logger.Information(message);

@@ -14,8 +14,8 @@ namespace TrafficControlApp.Processors;
 public class VehicleColorProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult> processingItemsStorageServiceRepository,
         IAnalyzerService analyzerService,
         IMapper mapper,
-        IEventLoggingService eventLoggingService)
-    : Processor<Track, VehicleColorProcessionResult>(eventLoggingService)
+        IEventLoggingService loggingService)
+    : Processor<Track, VehicleColorProcessionResult>(loggingService)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
@@ -23,7 +23,7 @@ public class VehicleColorProcessor(IProcessingItemsStorageServiceRepository<stri
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleColorProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent($"COLOR! + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
+        await loggingService.Log($"COLOR! + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
         return typeProcessionResult;
     }
 

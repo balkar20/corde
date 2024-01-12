@@ -15,8 +15,8 @@ public class VehicleTypeProcessor
     (IProcessingItemsStorageServiceRepository<string, Track, VehicleTypeProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService eventLoggingService)
-    : Processor<Track, VehicleTypeProcessionResult>(eventLoggingService)
+    IEventLoggingService loggingService)
+    : Processor<Track, VehicleTypeProcessionResult>(loggingService)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
@@ -31,7 +31,7 @@ public class VehicleTypeProcessor
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleTypeProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent($"TYPE + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
+        await loggingService.Log($"TYPE + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
 
         return typeProcessionResult;
     }

@@ -4,5 +4,5 @@ namespace TrafficControlApp.Services.Events.Abstractions;
 
 public interface IEventLoggingService
 {
-    Task LogEvent(string eventDataString, EventLoggingTypes type, string additional = "");
+    Task Log(string eventDataString, EventLoggingTypes type, string additional = "");
 }

@@ -14,8 +14,8 @@ namespace TrafficControlApp.Processors;
 public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService eventLoggingService)
-    : Processor<Track, VehicleDangerProcessionResult>(eventLoggingService)
+    IEventLoggingService loggingService)
+    : Processor<Track, VehicleDangerProcessionResult>(loggingService)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
@@ -23,7 +23,7 @@ public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<str
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
         var typeProcessionResult = mapper.Map<VehicleDangerProcessionResult>(typeAnaliseResult);
-        await eventLoggingService.LogEvent($"DANGER + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
+        await loggingService.Log($"DANGER + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
         return typeProcessionResult;
     }
 

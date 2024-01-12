@@ -15,8 +15,8 @@ public class VehicleMarkProcessor
     (IProcessingItemsStorageServiceRepository<string, Track, VehicleMarkProcessionResult> processingItemsStorageServiceRepository,
         IAnalyzerService analyzerService,
         IMapper mapper,
-        IEventLoggingService eventLoggingService)
-    : Processor<Track, VehicleMarkProcessionResult>(eventLoggingService)
+        IEventLoggingService loggingService)
+    : Processor<Track, VehicleMarkProcessionResult>(loggingService)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
@@ -30,7 +30,7 @@ public class VehicleMarkProcessor
         // var typeProcessionResult = 
         var result =  mapper.Map<VehicleMarkProcessionResult>(typeAnaliseResult);
         // sharedMemoryService.VehicleMarkProcessResultDictionary.Add(inputData.ItemId, result);
-        await eventLoggingService.LogEvent($"MARK + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
+        await loggingService.Log($"MARK + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
 
         return result;
     }

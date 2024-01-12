@@ -10,5 +10,6 @@ public enum EventLoggingTypes
     RaisingEvent,
     ProcessionInformation,
     SubscribingToEvent,
-    ThreadIdLogging
+    ThreadIdLogging,
+    ExceptionKindEvent
 }

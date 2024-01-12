@@ -14,8 +14,8 @@ namespace TrafficControlApp.Processors;
 public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService eventLoggingService)
-    : Processor<Track, VehicleTrafficProcessionResult>(eventLoggingService)
+    IEventLoggingService loggingService)
+    : Processor<Track, VehicleTrafficProcessionResult>(loggingService)
 {
     
     // public VehicleTrafficProcessor(ISharedMemoryVehicleService sharedMemoryService,
@@ -32,7 +32,7 @@ public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<st
             var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
             var typeAnaliseResult = await analyzerService.Analyse(analysingItem);
             var typeProcessionResult = mapper.Map<VehicleTrafficProcessionResult>(typeAnaliseResult);
-            await eventLoggingService.LogEvent($"TRAFFIC + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
+            await loggingService.Log($"TRAFFIC + time {DateTime.Now}", EventLoggingTypes.ProcessedEvent);
             return typeProcessionResult;
         }
 
