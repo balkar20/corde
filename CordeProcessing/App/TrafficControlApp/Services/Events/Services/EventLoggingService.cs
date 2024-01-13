@@ -27,6 +27,8 @@ public class EventLoggingService: IEventLoggingService
             EventLoggingTypes.SubscribingToEvent => $"SubscribingToEvent  with Name :{eventDataString} and ProcessorName: {additional}",
             EventLoggingTypes.ThreadIdLogging => $"ThreadId :{eventDataString} for Processor : {additional}",
             EventLoggingTypes.ExceptionKindEvent => $"ExceptionKindEvent :{eventDataString} for Processor : {additional}",
+            EventLoggingTypes.SemaphoreAcquired => $"SemaphoreAcquired for Processor:{eventDataString}",
+            EventLoggingTypes.SemaphoreReleased => $"SemaphoreReleased for Processor:{eventDataString}, Execution name: {additional}",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
         _logger.Information(message);
