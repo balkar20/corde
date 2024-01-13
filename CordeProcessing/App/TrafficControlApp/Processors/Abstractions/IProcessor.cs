@@ -25,7 +25,7 @@ public interface IProcessor<TInputData>
     event NotifyCurrentProcessingCompleted CurrentProcessingCompletedEvent;
     event NotifyParentProcessingCompleted ParentProcessingCompletedEvent;
     delegate Task NotifyNestedProcessingCompleted();
-    delegate Task NotifyCurrentProcessingCompleted(IProcessor<TInputData> processor);
+    delegate Task NotifyCurrentProcessingCompleted(IProcessor<TInputData> processor, int processionId);
     delegate Task NotifyParentProcessingCompleted(TInputData inputData);
 
     Task  FireCurrentProcessingCompletedEvent(IProcessor<TInputData> inputData);

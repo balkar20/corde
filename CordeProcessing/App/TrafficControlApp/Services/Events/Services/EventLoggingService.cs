@@ -15,6 +15,7 @@ public class EventLoggingService: IEventLoggingService
 
     public async Task Log(string eventDataString, EventLoggingTypes type, string additional = "")
     {
+        var hasDepRoot = "- has dependent root to execute: ";
         var message = type switch
         {
             EventLoggingTypes.ProcessedEvent => $"ProcessedEvent Message with String :{eventDataString}",
@@ -27,7 +28,7 @@ public class EventLoggingService: IEventLoggingService
             EventLoggingTypes.SubscribingToEvent => $"SubscribingToEvent  with Name :{eventDataString} and ProcessorName: {additional}",
             EventLoggingTypes.ThreadIdLogging => $"ThreadId :{eventDataString} for Processor : {additional}",
             EventLoggingTypes.ExceptionKindEvent => $"ExceptionKindEvent :{eventDataString} for Processor : {additional}",
-            EventLoggingTypes.SemaphoreAcquired => $"SemaphoreAcquired for Processor:{eventDataString}",
+            EventLoggingTypes.SemaphoreAcquired => $"SemaphoreAcquired for Processor:{eventDataString}, {(string.IsNullOrWhiteSpace(additional) ? string.Empty : (hasDepRoot + additional))}",
             EventLoggingTypes.SemaphoreReleased => $"SemaphoreReleased for Processor:{eventDataString}, Execution name: {additional}",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };

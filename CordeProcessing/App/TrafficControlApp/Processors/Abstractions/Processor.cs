@@ -120,7 +120,7 @@ where TProcessionResult: IProcessionResult
         {
             IsStartedSelfProcessing = true;
             // await ProcessLogicForRootBeforeStartCallingDependencies(inputData, existsInQueueForNextProcessing);
-            await ProcessLogicForRootBeforeStartCallingDependencies(inputData);
+            await ProcessLogicForRootBeforeStartCallingDependencies(inputData, false);
             IsCompletedCurrentProcessing = true;
             return;
         }
@@ -144,7 +144,7 @@ where TProcessionResult: IProcessionResult
     
     public async Task FireCurrentProcessingCompletedEvent(IProcessor<TInput> inputData)
     {
-        await CurrentProcessingCompletedEvent(inputData);
+        await CurrentProcessingCompletedEvent(inputData,1);
     }
 
     #endregion
@@ -158,18 +158,28 @@ where TProcessionResult: IProcessionResult
     #region Private Methods
 
     // private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData, bool existsInQueueForNextProcessing)
-    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
+    // private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
+    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData, bool needToGiveAnother)
     {
         // if (existsInQueueForNextProcessing)
         // {
         //Here we check Dependents and set ProcessorsExecutingCount for avoid LOCK
-         if (DependedProcessors.Any())
-             DependentProcessorsExecutingCount = DependedProcessors.Count; // ProcessorsExecuting.PushRange(executingNextProcessor);
+        if (DependedProcessors.Any())
+        {
+            if (ParentProcessor?.RootProcessorFromDependentQueue == this)
+            {
+                ParentProcessor.DependentProcessorsExecutingCount = DependedProcessors.Count;
+            }
+            else
+            {
+                DependentProcessorsExecutingCount = DependedProcessors.Count; // ProcessorsExecuting.PushRange(executingNextProcessor);
+            }
+        }
          
         //Here we just ProcessLogic because it root for someone 
         await ProcessLogic(inputData);
-        if (CurrentProcessingCompletedEvent != null)
-            await FireCurrentProcessingCompletedEvent(this);
+        // if (CurrentProcessingCompletedEvent != null)
+        //     await FireCurrentProcessingCompletedEvent(this);
         
         // RootProcessorFromDependentQueue = this;  
         if (ParentProcessor != null)
