@@ -41,23 +41,8 @@ public class SyncContext<TInput>
             processor.DependentProcessorsExecutingCount =
                 processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
         }
-        // if (processor.RootProcessorFromDependentQueue.IsStartedSelfProcessing)
-        // {
-        //     processor.DependentProcessorsExecutingCount = 
-        // }
-        
-        // if (isNeedToKeepLockedUntilDependentRootReleased)
-        // {
-        //     processor.CurrentProcessingCompletedEvent += async (o, i) => await ProcessorOnCurrentProcessingCompletedEvent(o, i);
-        // }
-        
         try
         {
-            // if (processor.RootProcessorFromDependentQueue != null && 
-            //     !processor.RootProcessorFromDependentQueue.IsStartedSelfProcessing)
-            // {
-            //     processor.DependentProcessorsExecutingCount = processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount + 1;
-            // }
             if (processor.DependentProcessorsExecutingCount > 0 && !isNeedToKeepLockedUntilDependentRootReleased)
             {
                 processor.DependentProcessorsExecutingCount -= 1;
@@ -67,22 +52,12 @@ public class SyncContext<TInput>
         }
         finally
         {
-            // if (!isNeedToKeepLockedUntilDependentRootReleased)
-            // {
-            //     await LogAndRelease(acquireId, processor, executionName);
-            // }
             if (isNeedToKeepLock || (!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
             {
                 await LogAndRelease(acquireId, processor, executionName);
             }
         }
     }
-
-    private async Task ProcessorOnCurrentProcessingCompletedEvent(IProcessor<TInput> processor, int acquireId)
-    {
-        await LogAndRelease(acquireId, processor, processor.ProcessorTypeName);
-    }
-
 
     private async Task<(string, int)> AcquireAndLog(IProcessor<TInput> processor)
     {
@@ -107,7 +82,6 @@ public class SyncContext<TInput>
         var bufList =  processor.DependedProcessors.ToList();
         var dependantNames = GetElementNames(bufList);
         var executingAfterReleaseMessage = isExecutesAfterRelease ? $"Executing After Release With execution Dependencies: {dependantNames}" : "";
-        // var allInQueue = processor.DependedProcessors.CopyTo()
         var rootCompleted = processor.IsStartedSelfProcessing && processor.IsCompletedCurrentProcessing;
         var dependantExistsAndRootCompleted = dependentProcessorExists && rootCompleted;
         var dependantExistsAndRootCompletedAndDependantNotCompleted = dependantExistsAndRootCompleted 

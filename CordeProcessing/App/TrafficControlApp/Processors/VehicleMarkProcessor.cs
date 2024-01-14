@@ -23,7 +23,6 @@ public class VehicleMarkProcessor
         // var resultOfRoot = await processingItemsStorageServiceRepository.GetProcessingItemResult(inputData.ItemId);
         //
         // var isSucceed = resultOfRoot.IsSucceed;
-        
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
         await WorkWithDependentData(inputData.ItemId);
         var typeAnaliseResult = await analyzerService.Analyse(analysingItem);

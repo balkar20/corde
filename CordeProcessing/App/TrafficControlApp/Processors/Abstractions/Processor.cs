@@ -17,12 +17,7 @@ where TProcessionResult: IProcessionResult
     
     private readonly IEventLoggingService? LoggingService = loggingService;
 
-    // private ConcurrentQueue<IProcessor<TInput>> ProcessorsDepended = new ();
-    
-    private SyncContext<TInput> semaphoreSlim = new (loggingService);
-    private int counter = 0;
-    private bool locked;
-    private string name = "Self";
+    private readonly SyncContext<TInput> _syncContext = new (loggingService);
 
     #endregion
 
@@ -75,29 +70,16 @@ where TProcessionResult: IProcessionResult
 
     public async Task ProcessNextAsync(TInput inputData)
     {
-        // CurrentProcessingCompletedEvent += HandleCompletionEvent;
         var threadId = Thread.CurrentThread.ManagedThreadId;
         TreadId = threadId;
         await LoggingService.Log(threadId.ToString(), EventLoggingTypes.ThreadIdLogging, $"|||{ProcessorTypeName}||| with dependant: {RootProcessorFromDependentQueue?.ProcessorTypeName}");
         await LoggingService.Log($"Time {DateTime.Now}", EventLoggingTypes.ProcessionInformation, $"|||{ProcessorTypeName}");
-
-        // var isReleased = await semaphoreSlim.WaitLock(this);
-        await semaphoreSlim.WaitLockWithCallback(this, DoConditionalProcession, inputData);
-        // if (TreadId != 0 && TreadId != threadId)
-        // {
-        //     CurrentProcessingCompletedEvent += async (o) => await HandleCompletionEvent(inputData);
-        //     TreadId = threadId;
-        // }
-        // if (!IsEventCompletionFired)
-        // {
-            // await DoConditionalProcession(inputData, isReleased);
-        // }
+        
+        await _syncContext.WaitLockWithCallback(this, DoConditionalProcession, inputData);
     }
 
     public async Task DoConditionalProcession(TInput inputData)
     {
-        // var existsInQueueForNextProcessing = false; //????????
-
         var isCurrentTreadForCompletedRoot = IsStartedSelfProcessing && IsCompletedCurrentProcessing && IsRoot;
         var isCurrentTreadForNotStartedExecutionRoot =
             !IsStartedSelfProcessing && !IsCompletedCurrentProcessing && IsRoot;
@@ -115,12 +97,11 @@ where TProcessionResult: IProcessionResult
         }
         
         //This block Executing in Root thread and only in case Root is Never Called
-        //So it executing once for root??????
+        //So it executing once for root
         if (isCurrentTreadForNotStartedExecutionRoot)
         {
             IsStartedSelfProcessing = true;
-            // await ProcessLogicForRootBeforeStartCallingDependencies(inputData, existsInQueueForNextProcessing);
-            await ProcessLogicForRootBeforeStartCallingDependencies(inputData, false);
+            await ProcessLogicForRootBeforeStartCallingDependencies(inputData);
             IsCompletedCurrentProcessing = true;
             return;
         }
@@ -157,60 +138,37 @@ where TProcessionResult: IProcessionResult
 
     #region Private Methods
 
-    // private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData, bool existsInQueueForNextProcessing)
-    // private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
-    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData, bool needToGiveAnother)
+    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
     {
-        // if (existsInQueueForNextProcessing)
-        // {
         //Here we check Dependents and set ProcessorsExecutingCount for avoid LOCK
         if (DependedProcessors.Any())
         {
-                DependentProcessorsExecutingCount = DependedProcessors.Count; // ProcessorsExecuting.PushRange(executingNextProcessor);
+                DependentProcessorsExecutingCount = DependedProcessors.Count;
         }
          
-        //Here we just ProcessLogic because it root for someone 
+        //Here we just ProcessLogic because it root for some Dependencies
         await ProcessLogic(inputData);
-        // if (CurrentProcessingCompletedEvent != null)
-        //     await FireCurrentProcessingCompletedEvent(this);
         
-        // RootProcessorFromDependentQueue = this;  
         if (ParentProcessor != null)
         {
-            //Here we fire event for locked threads pass through Semaphore and continue execute
-            //in parallel but for parent in case current processor is dependent and root simultaneously
-            
             ParentProcessor.RootProcessorFromDependentQueue = this; 
-            // ParentProcessor.FireCurrentProcessingCompletedEvent(inputData);
         }
-        //Here we fire event for locked threads pass through Semaphore and continue execute in parallel
-        // FireCurrentProcessingCompletedEvent(inputData);
     }
 
     private async Task CheckAndProcessDependentProcessor(TInput inputData)
     {
         var nextInQueProcessor = GetNextProcessorFromDependants();
-        // IF we have root processor than was  set from que????????? Then we execute it 
+        // IF   root processor than was  set from queue during parallel execution, then  execute it 
         if (RootProcessorFromDependentQueue != this && RootProcessorFromDependentQueue != null)
         {
             await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
-            // await RootProcessorFromDependentQueue.DoConditionalProcession(inputData, isReleased);
             return;
         }
 
-        //iN case we handle completedProcessionEvent for non root processors there will be null here and we just need to return  
-        if (nextInQueProcessor == null)
-        {
-            await LoggingService.Log("nextInQueProcessor = null", EventLoggingTypes.ExceptionKindEvent,
-                ProcessorTypeName);
-        }
-
-        //If we dont have root processor set from queue and remain in queue processor => Then we execute queue processor
+        //If we dont have root processor set from queue and remain in queue processors => Then we execute queue processor
         if (nextInQueProcessor != null)
         {
-            // isReleased = !nextInQueProcessor.IsRoot && isReleased;
             await nextInQueProcessor.DoConditionalProcession(inputData);
-            //Here we check Dependents and push for avoid LOCK
         }
     }
     
@@ -226,10 +184,10 @@ where TProcessionResult: IProcessionResult
         return proc;
     }
 
-    // public void SetDependents(Queue<IProcessor<TInput>> dependents)
-    // {
-    //     ProcessorsDepended = dependents;
-    // }
+    public void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents)
+    {
+        DependedProcessors = dependents;
+    }
 
     #endregion
     
@@ -244,19 +202,6 @@ where TProcessionResult: IProcessionResult
     private async Task NestedProcessingCompletedEventHandler()
     {
         await LoggingService.Log("NestedProcessingCompletedEventHandler", EventLoggingTypes.HandlingEvent);
-    }
-
-    private void HandleCompletionEvent(TInput inputData)
-    {
-        var currentTreadId = Thread.CurrentThread.ManagedThreadId;
-        
-        if (TreadId != 0 && currentTreadId != TreadId)
-        {
-            // IsEventCompletionFired = true;
-            // IsCompletedCurrentProcessing = true;
-            Task.Run(async () => await DoConditionalProcession(inputData) );
-            // Task.Run(DoConditionalProcession(inputData, false));
-        }
     }
 
     #endregion
