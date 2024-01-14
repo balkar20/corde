@@ -71,7 +71,7 @@ public class SyncContext<TInput>
         var dependantProcessorTypeName =
             dependantExistsAndRootCompleted ? dependantProcessor.ProcessorTypeName : HimselfLabel;
         
-        await LoggingService.Log($"Id = {acquireId} AcquireTime{DateTime.Now}, TypeName = {processor.ProcessorTypeName} for {dependantProcessorTypeName}",
+        await LoggingService.Log($"Id = {acquireId} AcquireTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} for {dependantProcessorTypeName}",
             EventLoggingTypes.SemaphoreAcquired, processor.RootProcessorFromDependentQueue?.ProcessorTypeName);
         return (dependantProcessorTypeName, acquireId);
     }
@@ -93,7 +93,7 @@ public class SyncContext<TInput>
         {
             dependantProcessorTypeName = HimselfLabel;
         }
-        await LoggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ? 
+        await LoggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ? 
             dependantProcessorTypeName : 
             HimselfLabel)} {executingAfterReleaseMessage}" , EventLoggingTypes.SemaphoreReleased, executionName); 
 

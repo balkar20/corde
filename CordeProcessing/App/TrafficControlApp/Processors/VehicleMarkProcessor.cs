@@ -15,8 +15,9 @@ public class VehicleMarkProcessor
     (IProcessingItemsStorageServiceRepository<string, Track, VehicleMarkProcessionResult> processingItemsStorageServiceRepository,
         IAnalyzerService analyzerService,
         IMapper mapper,
-        IEventLoggingService loggingService)
-    : Processor<Track, VehicleMarkProcessionResult>(loggingService)
+        IEventLoggingService loggingService, 
+        string processorName)
+    : Processor<Track, VehicleMarkProcessionResult>(loggingService, processorName)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {

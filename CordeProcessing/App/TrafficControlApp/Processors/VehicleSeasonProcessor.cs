@@ -14,8 +14,9 @@ namespace TrafficControlApp.Processors;
 public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleSeasonProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService loggingService)
-    : Processor<Track, VehicleSeasonProcessionResult>(loggingService)
+    IEventLoggingService loggingService, 
+    string processorName)
+    : Processor<Track, VehicleSeasonProcessionResult>(loggingService, processorName)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)

@@ -8,7 +8,8 @@ using TrafficControlApp.Services.Events.Data.Enums;
 namespace TrafficControlApp.Processors.Abstractions;
 
 public abstract class Processor<TInput, TProcessionResult>(
-        IEventLoggingService? loggingService)
+        IEventLoggingService? loggingService,
+        string processorName)
     : IProcessor<TInput>
 where TInput: ApplicationItem<string>
 where TProcessionResult: IProcessionResult
@@ -31,13 +32,13 @@ where TProcessionResult: IProcessionResult
     
     public string ProcessorId  => Guid.NewGuid().ToString();
     
-    
     public string InputId { get; set; }
     public int TreadId { get; set; }
     public bool IsRoot { get; set; }
     
     public bool IsEventCompletionFired { get; set; }
     public string ProcessorTypeName { get; set; }
+    public string ProcessorName { get; set; } = processorName;
     
     public bool IsCompletedNestedProcessing { get; set; }
     public bool IsCompletedCurrentProcessing { get; set; }

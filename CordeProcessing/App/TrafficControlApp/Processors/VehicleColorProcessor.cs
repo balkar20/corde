@@ -14,8 +14,9 @@ namespace TrafficControlApp.Processors;
 public class VehicleColorProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult> processingItemsStorageServiceRepository,
         IAnalyzerService analyzerService,
         IMapper mapper,
-        IEventLoggingService loggingService)
-    : Processor<Track, VehicleColorProcessionResult>(loggingService)
+        IEventLoggingService loggingService, 
+        string processorName)
+    : Processor<Track, VehicleColorProcessionResult>(loggingService, processorName)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)

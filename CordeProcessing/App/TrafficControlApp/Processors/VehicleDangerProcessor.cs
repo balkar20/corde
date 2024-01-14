@@ -14,8 +14,9 @@ namespace TrafficControlApp.Processors;
 public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService loggingService)
-    : Processor<Track, VehicleDangerProcessionResult>(loggingService)
+    IEventLoggingService loggingService, 
+    string processorName)
+    : Processor<Track, VehicleDangerProcessionResult>(loggingService, processorName)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {

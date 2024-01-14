@@ -14,8 +14,9 @@ namespace TrafficControlApp.Processors;
 public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository,
     IAnalyzerService analyzerService,
     IMapper mapper,
-    IEventLoggingService loggingService)
-    : Processor<Track, VehicleTrafficProcessionResult>(loggingService)
+    IEventLoggingService loggingService, 
+    string processorName)
+    : Processor<Track, VehicleTrafficProcessionResult>(loggingService, processorName)
 {
     
     // public VehicleTrafficProcessor(ISharedMemoryVehicleService sharedMemoryService,

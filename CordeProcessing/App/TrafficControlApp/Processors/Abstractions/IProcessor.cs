@@ -13,10 +13,12 @@ public interface IProcessor<TInputData>
     
     ConcurrentStack<IProcessor<TInputData>> ProcessorsExecuting { get; set; }
     string ProcessorTypeName { get; set; }
+    string ProcessorName { get; set; }
+    int DependentProcessorsExecutingCount { get; set; }
     IProcessor<TInputData>? ParentProcessor { get; set; }
     IProcessor<TInputData>? RootProcessorFromDependentQueue { get; set; }
     ConcurrentQueue<IProcessor<TInputData>> DependedProcessors { get; set; }
-    int DependentProcessorsExecutingCount { get; set; }
+
     // IProcessor<TInputData>? NextInQueueProcessor { get; set; }
     Task ProcessNextAsync(TInputData inputData);
     Task DoConditionalProcession(TInputData inputData);
