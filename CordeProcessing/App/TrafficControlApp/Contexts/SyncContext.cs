@@ -11,20 +11,6 @@ public class SyncContext<TInput>
     
     const string HimselfLabel = "Himself";
     public SemaphoreSlim SemaphoreSlim { get; set; } = new (1, 1);
-    // public SemaphoreSlim SemaphoreSlim2 { get; set; }= new (1, 2);
-    // public SemaphoreSlim SemaphoreSlim3 { get; set; }= new (1, 3);
-    public object lockObj = new ();
-    private int  oo  = 1;
-    public ConcurrentBag<object> SyncList { get; set; }
-    public int count;
-
-    public int Count
-    {
-        get
-        {
-            return count;
-        }
-    }
 
     public SyncContext(IEventLoggingService? loggingService)
     {
@@ -36,37 +22,56 @@ public class SyncContext<TInput>
         var (executionName, acquireId) = await AcquireAndLog(processor);
         
         var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
-        
+
+        var isNeedToKeepLock = !processor.IsStartedSelfProcessing &&
+                               processor.IsRoot &&
+                               dependentProcessorExists;
         bool isNeedToKeepLockedUntilDependentRootReleased =
             processor.IsStartedSelfProcessing &&
             processor.IsCompletedCurrentProcessing &&
             dependentProcessorExists &&
             dependantProcessor.IsRoot &&
             !dependantProcessor.IsStartedSelfProcessing;
-        
-        if (isNeedToKeepLockedUntilDependentRootReleased)
+
+        if (dependantProcessor == null &&
+            processor.RootProcessorFromDependentQueue?.DependedProcessors.Count > 0 &&
+            processor.RootProcessorFromDependentQueue.IsCompletedCurrentProcessing &&
+            !processor.RootProcessorFromDependentQueue.IsCompletedNestedProcessing)
         {
-            processor.CurrentProcessingCompletedEvent += async (o, i) => await ProcessorOnCurrentProcessingCompletedEvent(o, i);
+            processor.DependentProcessorsExecutingCount =
+                processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
         }
+        // if (processor.RootProcessorFromDependentQueue.IsStartedSelfProcessing)
+        // {
+        //     processor.DependentProcessorsExecutingCount = 
+        // }
+        
+        // if (isNeedToKeepLockedUntilDependentRootReleased)
+        // {
+        //     processor.CurrentProcessingCompletedEvent += async (o, i) => await ProcessorOnCurrentProcessingCompletedEvent(o, i);
+        // }
         
         try
         {
-            // if (isNeedToKeepLockedUntilDependentRootReleased)
+            // if (processor.RootProcessorFromDependentQueue != null && 
+            //     !processor.RootProcessorFromDependentQueue.IsStartedSelfProcessing)
             // {
-            //     
+            //     processor.DependentProcessorsExecutingCount = processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount + 1;
             // }
             if (processor.DependentProcessorsExecutingCount > 0 && !isNeedToKeepLockedUntilDependentRootReleased)
             {
                 processor.DependentProcessorsExecutingCount -= 1;
-
                 await LogAndRelease(acquireId, processor, executionName, true);
             }
             await callback(input);   
         }
         finally
         {
-            count++;
-            if (!isNeedToKeepLockedUntilDependentRootReleased)
+            // if (!isNeedToKeepLockedUntilDependentRootReleased)
+            // {
+            //     await LogAndRelease(acquireId, processor, executionName);
+            // }
+            if (isNeedToKeepLock || (!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
             {
                 await LogAndRelease(acquireId, processor, executionName);
             }

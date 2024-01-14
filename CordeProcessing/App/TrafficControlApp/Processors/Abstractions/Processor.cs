@@ -166,14 +166,7 @@ where TProcessionResult: IProcessionResult
         //Here we check Dependents and set ProcessorsExecutingCount for avoid LOCK
         if (DependedProcessors.Any())
         {
-            if (ParentProcessor?.RootProcessorFromDependentQueue == this)
-            {
-                ParentProcessor.DependentProcessorsExecutingCount = DependedProcessors.Count;
-            }
-            else
-            {
                 DependentProcessorsExecutingCount = DependedProcessors.Count; // ProcessorsExecuting.PushRange(executingNextProcessor);
-            }
         }
          
         //Here we just ProcessLogic because it root for someone 
