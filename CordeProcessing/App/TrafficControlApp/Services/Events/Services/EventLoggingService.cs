@@ -18,7 +18,7 @@ public class EventLoggingService: IEventLoggingService
         var hasDepRoot = "- has dependent root to execute: ";
         var message = type switch
         {
-            EventLoggingTypes.ProcessedEvent => $"ProcessedEvent Message with String :{eventDataString}",
+            EventLoggingTypes.ProcessedProcessor => $"ProcessedProcessor :{eventDataString}",
             EventLoggingTypes.CallMethodInProcessor => $"CallMethodInProcessor Message with String :{eventDataString}",
             EventLoggingTypes.CallMethodInProcessorWithCondition => $"CallMethodInProcessorWithCondition Message with String :{eventDataString} and condition:{additional}",
             EventLoggingTypes.CallMethodInProcessorWithCompletedDependant => $"CallMethodInProcessorWithCompletedDependant  with thisName :{eventDataString} and DeperndantName:{additional}",

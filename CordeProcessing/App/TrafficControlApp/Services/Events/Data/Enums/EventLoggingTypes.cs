@@ -2,7 +2,7 @@
 
 public enum EventLoggingTypes
 {
-    ProcessedEvent,
+    ProcessedProcessor,
     CallMethodInProcessor,
     CallMethodInProcessorWithCondition,
     CallMethodInProcessorWithCompletedDependant,

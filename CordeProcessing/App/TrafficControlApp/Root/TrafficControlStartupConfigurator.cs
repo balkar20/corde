@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftWindowsWPF;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers;
 using TrafficControlApp.Consumers.Abstractions;
@@ -12,6 +13,9 @@ using Serilog;
 using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.ClientDevices.Devices;
 using TrafficControlApp.Mapping;
+using TrafficControlApp.Models;
+using TrafficControlApp.Models.Results;
+using TrafficControlApp.Processors.Template;
 using TrafficControlApp.Services.Events.Services;
 
 
@@ -47,7 +51,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     
     public  async Task Test()
     {
-        var bunch =  await _trackDevice.GiveMeTrackDataBunch("Type");
+        var bunch =  await _trackDevice.GiveMeTrackDataBunch("Type", applicationConfiguration.MaxParallelConsumeCount);
         // _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
         foreach (var bunchTrack in bunch.Tracks)
         {
@@ -132,7 +136,9 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     {
         _context = new TrafficProcessingContext(applicationConfiguration);
         
-        _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
+        var loggerService = new EventLoggingService(_logger);
+
+        _context.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
         
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
@@ -147,6 +153,17 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
         _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
 
+        var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", _context.GetLongRunningTask);
+        var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
+        var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
+        var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
+
+        applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;
     }
 
@@ -154,8 +171,8 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
     {
         var ctx = new TrafficProcessingContext(applicationConfiguration);
         _context = new TrafficProcessingContext(applicationConfiguration);
-        
-        ctx.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
+        var loggerService = new EventLoggingService(_logger);
+        ctx.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
         
         //TypeDependant
         ctx.VehicleRootProcessor.AddDependentProcessor(ctx.VehicleMarkProcessor);
@@ -168,6 +185,18 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleColorProcessor);
         ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleSeasonProcessor);
         ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleTrafficProcessor);
+
+
+        var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", ctx.GetLongRunningTask);
+        var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", ctx.GetLongRunningTask);
+        var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", ctx.GetLongRunningTask);
+        var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", ctx.GetLongRunningTask);
+        
+        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc2);
+        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc3);
+        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc4);
+
         return ctx;
     }
     

@@ -21,7 +21,7 @@ public class TrackProducer: ITrackProducer
     public SortedSet<int> Treads { get; set; }
     public async Task ProduceAllAsync(ITargetBlock<Track> target)
     {
-        var sourceData = await _trackDevice.GiveMeTrackDataBunch("SomeTracks");
+        var sourceData = await _trackDevice.GiveMeTrackDataBunch("SomeTracks", config.MaxParallelConsumeCount);
         foreach (var track in sourceData.Tracks)
         {
             var item = $"Item {track.ItemId + 1}";

@@ -56,8 +56,6 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
         IAnalyzerService dangerAnalyzerService
         ) GetAnalysers()
     {
-        var aso = new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig);
-        var asi = new ColorAnalyzerService(applicationConfiguration.VehicleColorAnalyseConfig);
         return (
             new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig),
             new ColorAnalyzerService(applicationConfiguration.VehicleColorAnalyseConfig),
@@ -66,8 +64,7 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
             new TrafficAnalyzerService(applicationConfiguration.VehicleTrafficAnalyseConfig),
             new DangerAnalyzerService(applicationConfiguration.VehicleDangerAnalyseConfig));
     }
-
-        
+    
     private (
         IProcessingItemsStorageServiceRepository<String,  Track, VehicleTypeProcessionResult> vehicleTypeRepository,
         IProcessingItemsStorageServiceRepository<String,  Track, VehicleColorProcessionResult> colorRepository,
@@ -77,7 +74,6 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
         IProcessingItemsStorageServiceRepository<String,  Track, VehicleDangerProcessionResult> dangerRepository
         ) GetRepositories()
     {
-        var aso = new TypeAnalyzerService(applicationConfiguration.VehicleTypeAnalyseConfig);
         var _sharedMemoryStorage = new SharedMemoryStorage();
         return (
             new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
@@ -86,6 +82,13 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
             new MarkAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
             new TrafficAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage),
             new DangerAbstractDictionaryProcessingItemsStorageServiceRepository(_sharedMemoryStorage));
+    }
+
+        
+    public async Task<PoolProcessionResult> GetLongRunningTask(Track track)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        return new PoolProcessionResult();
     }
     
     #endregion

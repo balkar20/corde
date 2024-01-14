@@ -6,9 +6,9 @@ namespace TrafficControlApp.ClientDevices.Devices;
 
 public class TrackDevice : ITrackDevice
 {
-    public Task<BatchOfTracks> GiveMeTrackDataBunch(string batchType)
+    public Task<BatchOfTracks> GiveMeTrackDataBunch(string batchType, int amountOfProcessors)
     {
-        return Task.FromResult<BatchOfTracks>(GetRandomData(6));
+        return Task.FromResult<BatchOfTracks>(GetRandomData(amountOfProcessors));
     }
 
     private BatchOfTracks GetRandomData(int amount)

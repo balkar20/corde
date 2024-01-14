@@ -10,6 +10,8 @@ public interface IProcessor<TInputData>
     string InputId { get; set; }
     bool IsRoot { get; set; }
     bool IsEventCompletionFired {get; set; }
+    int TotalAmountOfProcessors {get; set; }
+    
     
     ConcurrentStack<IProcessor<TInputData>> ProcessorsExecuting { get; set; }
     string ProcessorTypeName { get; set; }

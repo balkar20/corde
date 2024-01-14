@@ -35,7 +35,8 @@ public class RunTest
     public async Task Run_First_Dependency_Type_Passed_In_Right_Order()
     {
         var _trackDevice = new TrackDevice();
-       var bunchOfTracks = await _trackDevice.GiveMeTrackDataBunch("");
+        var amountOfProcessors = 6;
+       var bunchOfTracks = await _trackDevice.GiveMeTrackDataBunch("", amountOfProcessors);
         TypeAbstractDictionaryProcessingItemsStorageServiceRepository abst =
             new TypeAbstractDictionaryProcessingItemsStorageServiceRepository(new SharedMemoryStorage());
 

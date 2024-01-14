@@ -2,6 +2,7 @@
 using TrafficControlApp.Models.Results.Procession.Abstractions;
 using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Processors.Template;
 
@@ -15,7 +16,9 @@ public class TemplateProcessor<TInput, TProcessionResult>(
 {
     protected override async Task<IProcessionResult> ProcessLogic(TInput inputData)
     {
-        return await processLogic(inputData);
+        var result =  await processLogic(inputData);
+        await loggingService.Log($"{ProcessorName} + time {DateTime.Now}", EventLoggingTypes.ProcessedProcessor);
+        return result;
     }
 
     protected override Task SetProcessionResult(TProcessionResult result)

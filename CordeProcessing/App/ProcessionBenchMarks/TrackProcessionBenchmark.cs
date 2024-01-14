@@ -14,7 +14,8 @@ public class TrackProcessionBenchmark
     public void Setup()
     {
         var trackDevice = new TrackDevice();
-        var bunch = trackDevice.GiveMeTrackDataBunch("").Result;
+        int amountOfProcessors = 9;
+        var bunch = trackDevice.GiveMeTrackDataBunch("", amountOfProcessors).Result;
         _tracks = bunch.Tracks.ToList();
         
     }

@@ -35,6 +35,8 @@ where TProcessionResult: IProcessionResult
     public string InputId { get; set; }
     public int TreadId { get; set; }
     public bool IsRoot { get; set; }
+
+    public int TotalAmountOfProcessors { get; set; } = 1;
     
     public bool IsEventCompletionFired { get; set; }
     public string ProcessorTypeName { get; set; }
@@ -119,8 +121,12 @@ where TProcessionResult: IProcessionResult
         ProcessorTypeName = this.GetType().FullName;
         dependentProcessor.ProcessorTypeName = dependentProcessor.GetType().FullName;
         DependedProcessors.Enqueue(dependentProcessor);
+        if (ParentProcessor != null)
+        {
+            ParentProcessor.TotalAmountOfProcessors++;
+        }
+        TotalAmountOfProcessors++;
         this.IsRoot = true;
-        // dependentProcessor.ParentProcessingCompletedEvent += ParentProcessorOnCurrentProcessingCompletedEventHandler;
         dependentProcessor.ParentProcessor = this;
     }
     
@@ -188,6 +194,11 @@ where TProcessionResult: IProcessionResult
     public void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents)
     {
         DependedProcessors = dependents;
+        if (ParentProcessor != null)
+        {
+            ParentProcessor.TotalAmountOfProcessors += dependents.Count;
+        }
+        TotalAmountOfProcessors += dependents.Count;
     }
 
     #endregion
