@@ -59,16 +59,17 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
                 await LogAndRelease(acquireId, rootProcessor, executionName, true);
             }
             await callback(input); 
-            await ChechAndHanleCompletion(rootProcessor);
+            await CheckAndHandleCompletion(rootProcessor);
         }
         finally
         {
-            if (isNeedToKeepLock || (!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
+            if (isNeedToKeepLock)
             {
-                if ((!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
-                {
-                    rootProcessor.DependentProcessorsExecutingCount--;
-                }
+                await LogAndRelease(acquireId, rootProcessor, executionName);
+            }
+            else if (isNeedToKeepLockedUntilDependentRootReleased)
+            {
+                rootProcessor.DependentProcessorsExecutingCount--;
                 await LogAndRelease(acquireId, rootProcessor, executionName);
             }
         }
@@ -78,7 +79,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
     
     #region Private Methods
     
-    private async Task ChechAndHanleCompletion(IProcessor<TInput> rootProcessor)
+    private async Task CheckAndHandleCompletion(IProcessor<TInput> rootProcessor)
     {
         if (_counter == 0 && rootProcessor.DependedProcessors.Count == 0 && !_completionWasFired)
         {
@@ -141,14 +142,18 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         {
             return false;
         }
-        
+
         var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
-        bool isNeedToKeepLockedUntilDependentRootReleased =
+        
+        var dependentsCount = processor.DependedProcessors.Count;
+
+        var isNeedToKeepLockedUntilDependentRootReleased =
             processor.IsStartedSelfProcessing &&
             processor.IsCompletedCurrentProcessing &&
             dependentProcessorExists &&
             dependantProcessor.IsRoot &&
             !dependantProcessor.IsStartedSelfProcessing;
+            // && dependentsCount == 1;
         
         return isNeedToKeepLockedUntilDependentRootReleased;
     }

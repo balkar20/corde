@@ -156,9 +156,13 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
         string[] newNames = {"Volvo", "BMW", "Ford"};
+        string[] newNames2 = {"Koko", "Mila", "Oni"};
         var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
+        var dep2 = GetTemplateProcessorsWithNames(newNames2, loggerService, _context);
         var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
-        newProc3.SetDependents(depsQueue);
+        var depsQueue2 = new ConcurrentQueue<IProcessor<Track>>(dep2);
+        newProc2.SetDependents(depsQueue);
+        newProc3.SetDependents(depsQueue2);
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;
