@@ -26,11 +26,9 @@ public class ParallelProcessionSynchronizationService<TInput>
                                processor.IsRoot &&
                                dependentProcessorExists;
         bool isNeedToKeepLockedUntilDependentRootReleased =
-            processor.IsStartedSelfProcessing &&
-            processor.IsCompletedCurrentProcessing &&
-            dependentProcessorExists &&
-            dependantProcessor.IsRoot &&
-            !dependantProcessor.IsStartedSelfProcessing;
+            CheckIsNeedToKeepLockedUntilDependentRootReleased(processor) ||
+            CheckIsNeedToKeepLockedUntilDependentRootReleased(processor.RootProcessorFromDependentQueue);
+        
 
         if (dependantProcessor == null &&
             !processor.GotDependentProcessorsExecutingCountFromDependentRoot &&
@@ -108,5 +106,24 @@ public class ParallelProcessionSynchronizationService<TInput>
     private string GetElementNames(List<IProcessor<TInput>> list)
     {
         return string.Join(", ", list.Select(obj => obj.ProcessorTypeName));
+    }
+
+    private bool CheckIsNeedToKeepLockedUntilDependentRootReleased(IProcessor<TInput> processor)
+    {
+        if (processor== null)
+        {
+            return false;
+        }
+        
+        var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
+        bool isNeedToKeepLockedUntilDependentRootReleased =
+            processor.IsStartedSelfProcessing &&
+            processor.IsCompletedCurrentProcessing &&
+            dependentProcessorExists &&
+            dependantProcessor.IsRoot &&
+            !dependantProcessor.IsStartedSelfProcessing;
+        
+        return isNeedToKeepLockedUntilDependentRootReleased;
+
     }
 }

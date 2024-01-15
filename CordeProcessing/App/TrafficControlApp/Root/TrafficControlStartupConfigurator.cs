@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AutoMapper;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers;
@@ -13,6 +14,7 @@ using TrafficControlApp.ClientDevices.Devices;
 using TrafficControlApp.Mapping;
 using TrafficControlApp.Models;
 using TrafficControlApp.Models.Results;
+using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Processors.Template;
 using TrafficControlApp.Services.Events.Services;
 
@@ -147,14 +149,16 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
         var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
         var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc);
+        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc2);
+        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc3);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
-        // string[] newNames = {"Volvo", "BMW", "Ford"};
-        // var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
-        // var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
-        // _context.VehicleTrafficProcessor.SetDependents(depsQueue);
+        string[] newNames = {"Volvo", "BMW", "Ford"};
+        var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
+        var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
+        newProc3.SetDependents(depsQueue);
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;

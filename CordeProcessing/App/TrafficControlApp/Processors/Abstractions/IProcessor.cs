@@ -27,6 +27,7 @@ public interface IProcessor<TInput>
     void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents);
     int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
     int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
+    void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
     
     //Events
     event Func<Task> NestedProcessingCompletedEvent;

@@ -59,8 +59,7 @@ public abstract class Processor<TInput, TProcessionResult>(
     #region Protected Abstract Methods
 
     protected abstract Task<IProcessionResult> ProcessLogic(TInput inputData);
-
-
+    
     protected abstract Task SetProcessionResult(TProcessionResult result);
 
     #endregion
@@ -109,12 +108,9 @@ public abstract class Processor<TInput, TProcessionResult>(
         ProcessorTypeName = this.GetType().FullName;
         dependentProcessor.ProcessorTypeName = dependentProcessor.GetType().FullName;
         DependedProcessors.Enqueue(dependentProcessor);
-        if (ParentProcessor != null)
-        {
-            ParentProcessor.TotalAmountOfProcessors++;
-        }
 
         TotalAmountOfProcessors++;
+        IncrementParentsTotalCount(1, ParentProcessor);
         this.IsRoot = true;
         dependentProcessor.ParentProcessor = this;
     }
@@ -152,6 +148,7 @@ public abstract class Processor<TInput, TProcessionResult>(
     
     public void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents)
     {
+        this.IsRoot = true;
         DependedProcessors = dependents;
         TotalAmountOfProcessors += dependents.Count;
         IncrementParentsTotalCount(dependents.Count, ParentProcessor);
@@ -177,11 +174,34 @@ public abstract class Processor<TInput, TProcessionResult>(
 
         //Here we just ProcessLogic because it root for some Dependencies
         await ProcessLogicAndComplete(inputData);
+        // if (ParentProcessor != null)
+        // {
+        //     ParentProcessor.RootProcessorFromDependentQueue = this;
+        // }
 
-        if (ParentProcessor != null)
+            RecursivelySetParent(this, this.ParentProcessor);
+        
+        
+    }
+
+    public void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
+    {
+        if (processor.IsRoot && parentProcessor == null)
         {
-            ParentProcessor.RootProcessorFromDependentQueue = this;
+            return;
         }
+        if (parentProcessor?.ParentProcessor == null)
+        {
+            parentProcessor.RootProcessorFromDependentQueue = processor;
+            parentProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = false;
+            return;
+        }
+        if (parentProcessor != null)
+        {
+            RecursivelySetParent(processor, parentProcessor.ParentProcessor);
+            return;
+        }
+       
     }
 
     private async Task CheckAndProcessDependentProcessor(TInput inputData)
