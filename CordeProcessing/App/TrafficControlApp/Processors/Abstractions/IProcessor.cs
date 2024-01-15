@@ -28,6 +28,7 @@ public interface IProcessor<TInput>
     int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
     int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
     void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
+    Task SignalNestedProcessingCompletion();
     
     //Events
     event Func<Task> NestedProcessingCompletedEvent;

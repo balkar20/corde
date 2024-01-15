@@ -90,9 +90,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         //So it executing once for root
         if (isCurrentTreadForNotStartedExecutionRoot)
         {
-            IsStartedSelfProcessing = true;
             await ProcessLogicForRootBeforeStartCallingDependencies(inputData);
-            IsCompletedCurrentProcessing = true;
             return;
         }
 
@@ -137,11 +135,8 @@ public abstract class Processor<TInput, TProcessionResult>(
             return parentProcessor.DecrementParentsTotalCount(count, parentProcessor.ParentProcessor);
         }
         
-        TotalAmountOfProcessors -= count;
-        if (TotalAmountOfProcessors == -1)
-        {
-            this.NestedProcessingCompletedEvent?.Invoke();
-        }
+        // TotalAmountOfProcessors -= count;
+        
 
         return TotalAmountOfProcessors;
     }
@@ -152,6 +147,11 @@ public abstract class Processor<TInput, TProcessionResult>(
         DependedProcessors = dependents;
         TotalAmountOfProcessors += dependents.Count;
         IncrementParentsTotalCount(dependents.Count, ParentProcessor);
+    }
+
+    public async Task SignalNestedProcessingCompletion()
+    {
+        await NestedProcessingCompletedEvent.Invoke();
     }
 
     #endregion
@@ -174,14 +174,8 @@ public abstract class Processor<TInput, TProcessionResult>(
 
         //Here we just ProcessLogic because it root for some Dependencies
         await ProcessLogicAndComplete(inputData);
-        // if (ParentProcessor != null)
-        // {
-        //     ParentProcessor.RootProcessorFromDependentQueue = this;
-        // }
 
-            RecursivelySetParent(this, this.ParentProcessor);
-        
-        
+        RecursivelySetParent(this, this.ParentProcessor);
     }
 
     public void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
@@ -212,14 +206,6 @@ public abstract class Processor<TInput, TProcessionResult>(
         if (RootProcessorFromDependentQueue != this && RootProcessorFromDependentQueue != null)
         {
             await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
-
-            //Here if we can see that RootProcessorFromDependentQueue
-            //exhausted With the his dependencies And achieve the last one which is root - Then we swap it to that  
-            // if (RootProcessorFromDependentQueue.DependedProcessors.TryPeek(out var dependedProcessor) &&
-            //     dependedProcessor.IsRoot)
-            // {
-            //     RootProcessorFromDependentQueue = dependedProcessor;
-            // }
             return;
         }
 
@@ -240,18 +226,13 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     private async Task ProcessLogicAndComplete(TInput input)
     {
+        IsStartedSelfProcessing = true;
         await ProcessLogic(input);
-        // TotalAmountOfProcessors--;
+        IsCompletedCurrentProcessing = true;
+        
+        TotalAmountOfProcessors--;
+        
         DecrementParentsTotalCount(1, this.ParentProcessor);
-        // if (DecrementParents(1, this) == 0)
-        // {
-        //     this.NestedProcessingCompletedEvent?.Invoke();
-        // }
-        //
-        // if (CurrentProcessingCompletedEvent != null)
-        // {
-        //     CurrentProcessingCompletedEvent(this, ProcessorId);
-        // }
     }
 
     #endregion

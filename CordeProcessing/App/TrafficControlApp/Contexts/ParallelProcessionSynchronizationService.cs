@@ -4,50 +4,62 @@ using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Contexts;
 
-public class ParallelProcessionSynchronizationService<TInput>
+public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingService? loggingService)
 {
-    private readonly IEventLoggingService? LoggingService;
-    
+    #region Constants
+
     const string HimselfLabel = "Himself";
-    public SemaphoreSlim SemaphoreSlim { get; set; } = new (1, 1);
 
-    public ParallelProcessionSynchronizationService(IEventLoggingService? loggingService)
-    {
-        LoggingService = loggingService;
-    }
+    #endregion
+    
+    #region Fields
+    
+    private int _counter;
+    private bool _completionWasFired;
 
-    public async Task WaitLockWithCallback(IProcessor<TInput> processor, Func< TInput, Task> callback, TInput input)
+    #endregion
+
+    #region Properties
+    
+    public SemaphoreSlim SemaphoreSlim { get; } = new (1, 1);
+    
+    #endregion
+    
+    #region Public Methods
+
+    public async Task WaitLockWithCallback(IProcessor<TInput> rootProcessor, Func< TInput, Task> callback, TInput input)
     {
-        var (executionName, acquireId) = await AcquireAndLog(processor);
+        var (executionName, acquireId) = await AcquireAndLog(rootProcessor);
         
-        var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
+        var dependentProcessorExists = rootProcessor.DependedProcessors.TryPeek(out var dependantProcessor);
 
-        var isNeedToKeepLock = !processor.IsStartedSelfProcessing &&
-                               processor.IsRoot &&
+        var isNeedToKeepLock = !rootProcessor.IsStartedSelfProcessing &&
+                               rootProcessor.IsRoot &&
                                dependentProcessorExists;
         bool isNeedToKeepLockedUntilDependentRootReleased =
-            CheckIsNeedToKeepLockedUntilDependentRootReleased(processor) ||
-            CheckIsNeedToKeepLockedUntilDependentRootReleased(processor.RootProcessorFromDependentQueue);
+            CheckIsNeedToKeepLockedUntilDependentRootReleased(rootProcessor) ||
+            CheckIsNeedToKeepLockedUntilDependentRootReleased(rootProcessor.RootProcessorFromDependentQueue);
         
 
         if (dependantProcessor == null &&
-            !processor.GotDependentProcessorsExecutingCountFromDependentRoot &&
-            processor.RootProcessorFromDependentQueue?.DependedProcessors.Count > 0 &&
-            processor.RootProcessorFromDependentQueue.IsCompletedCurrentProcessing &&
-            !processor.RootProcessorFromDependentQueue.IsCompletedNestedProcessing)
+            !rootProcessor.GotDependentProcessorsExecutingCountFromDependentRoot &&
+            rootProcessor.RootProcessorFromDependentQueue?.DependedProcessors.Count > 0 &&
+            rootProcessor.RootProcessorFromDependentQueue.IsCompletedCurrentProcessing &&
+            !rootProcessor.RootProcessorFromDependentQueue.IsCompletedNestedProcessing)
         {
-            processor.DependentProcessorsExecutingCount =
-                processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
-            processor.GotDependentProcessorsExecutingCountFromDependentRoot = true;
+            rootProcessor.DependentProcessorsExecutingCount =
+                rootProcessor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
+            rootProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = true;
         }
         try
         {
-            if (processor.DependentProcessorsExecutingCount > 0 && !isNeedToKeepLockedUntilDependentRootReleased)
+            if (rootProcessor.DependentProcessorsExecutingCount > 0 && !isNeedToKeepLockedUntilDependentRootReleased)
             {
-                processor.DependentProcessorsExecutingCount --;
-                await LogAndRelease(acquireId, processor, executionName, true);
+                rootProcessor.DependentProcessorsExecutingCount --;
+                await LogAndRelease(acquireId, rootProcessor, executionName, true);
             }
-            await callback(input);   
+            await callback(input); 
+            await ChechAndHanleCompletion(rootProcessor);
         }
         finally
         {
@@ -55,15 +67,29 @@ public class ParallelProcessionSynchronizationService<TInput>
             {
                 if ((!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
                 {
-                    processor.DependentProcessorsExecutingCount--;
+                    rootProcessor.DependentProcessorsExecutingCount--;
                 }
-                await LogAndRelease(acquireId, processor, executionName);
+                await LogAndRelease(acquireId, rootProcessor, executionName);
             }
+        }
+    }
+    
+    #endregion
+    
+    #region Private Methods
+    
+    private async Task ChechAndHanleCompletion(IProcessor<TInput> rootProcessor)
+    {
+        if (_counter == 0 && rootProcessor.DependedProcessors.Count == 0 && !_completionWasFired)
+        {
+            _completionWasFired = true;
+            await rootProcessor.SignalNestedProcessingCompletion();
         }
     }
 
     private async Task<(string, int)> AcquireAndLog(IProcessor<TInput> processor)
     {
+        _counter++;
         await SemaphoreSlim.WaitAsync();
 
         var acquireId = new Random().Next(1, 10000);
@@ -74,7 +100,7 @@ public class ParallelProcessionSynchronizationService<TInput>
         var dependantProcessorTypeName =
             dependantExistsAndRootCompleted ? dependantProcessor.ProcessorTypeName : HimselfLabel;
         
-        await LoggingService.Log($"Id = {acquireId} AcquireTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} for {dependantProcessorTypeName}",
+        await loggingService.Log($"Id = {acquireId} AcquireTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} for {dependantProcessorTypeName}",
             EventLoggingTypes.SemaphoreAcquired, processor.RootProcessorFromDependentQueue?.ProcessorTypeName);
         return (dependantProcessorTypeName, acquireId);
     }
@@ -96,11 +122,12 @@ public class ParallelProcessionSynchronizationService<TInput>
         {
             dependantProcessorTypeName = HimselfLabel;
         }
-        await LoggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ? 
+        await loggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ? 
             dependantProcessorTypeName : 
             HimselfLabel)} {executingAfterReleaseMessage}" , EventLoggingTypes.SemaphoreReleased, executionName); 
 
         SemaphoreSlim.Release();
+        _counter--;
     }
     
     private string GetElementNames(List<IProcessor<TInput>> list)
@@ -124,6 +151,7 @@ public class ParallelProcessionSynchronizationService<TInput>
             !dependantProcessor.IsStartedSelfProcessing;
         
         return isNeedToKeepLockedUntilDependentRootReleased;
-
     }
+    
+    #endregion
 }
