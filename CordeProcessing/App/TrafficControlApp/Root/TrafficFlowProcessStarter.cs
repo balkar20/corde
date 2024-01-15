@@ -3,7 +3,6 @@ using TrafficControlApp.ClientDevices.Abstractions;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers.Abstractions;
 using TrafficControlApp.Models;
-using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Producers.Abstraction;
 
 namespace TrafficControlApp.Root;

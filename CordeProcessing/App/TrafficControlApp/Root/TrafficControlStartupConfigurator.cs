@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.Diagnostics.Tracing.Parsers.MicrosoftWindowsWPF;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers;
 using TrafficControlApp.Consumers.Abstractions;
@@ -7,7 +6,6 @@ using TrafficControlApp.Contexts;
 using TrafficControlApp.Producers;
 using TrafficControlApp.Producers.Abstraction;
 using TrafficControlApp.Root.Abstractions;
-using TrafficControlApp.Services;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using TrafficControlApp.ClientDevices.Abstractions;
@@ -139,6 +137,7 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         var loggerService = new EventLoggingService(_logger);
 
         _context.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
+        // _context.VehicleRootProcessor.NestedProcessingCompletedEvent += async () => await VehicleRootProcessorOnNestedProcessingCompletedEvent();
         
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
@@ -157,47 +156,28 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
         var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
         var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
+        // string[] newNames = {"Volvo", "BMW", "Ford"};
+        // var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
+        // var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
+        // _context.VehicleTrafficProcessor.SetDependents(depsQueue);
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;
     }
 
-    protected TrafficProcessingContext ConstructProcessionContext()
+    private async Task VehicleRootProcessorOnNestedProcessingCompletedEvent()
     {
-        var ctx = new TrafficProcessingContext(applicationConfiguration);
-        _context = new TrafficProcessingContext(applicationConfiguration);
-        var loggerService = new EventLoggingService(_logger);
-        ctx.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
-        
-        //TypeDependant
-        ctx.VehicleRootProcessor.AddDependentProcessor(ctx.VehicleMarkProcessor);
-        ctx.VehicleRootProcessor.AddDependentProcessor(ctx.VehicleDangerProcessor);
-        
-        //MarkDependant                                  
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);                                
-        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleColorProcessor);
-        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleSeasonProcessor);
-        ctx.VehicleDangerProcessor.AddDependentProcessor(ctx.VehicleTrafficProcessor);
+        Console.WriteLine("DoDoDo");
+    }
 
-
-        var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", ctx.GetLongRunningTask);
-        var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", ctx.GetLongRunningTask);
-        var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", ctx.GetLongRunningTask);
-        var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", ctx.GetLongRunningTask);
-        
-        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc);
-        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc2);
-        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc3);
-        ctx.VehicleDangerProcessor.AddDependentProcessor(newProc4);
-
-        return ctx;
+    private List<TemplateProcessor<Track, PoolProcessionResult>> GetTemplateProcessorsWithNames(string[] names, EventLoggingService eventLoggingService, TrafficProcessingContext context)
+    {
+        return new List<TemplateProcessor<Track, PoolProcessionResult>>(names.Select(n =>
+            new TemplateProcessor<Track, PoolProcessionResult>(eventLoggingService, n, context.GetLongRunningTask)));
     }
     
     protected override void ConfigureLogging()

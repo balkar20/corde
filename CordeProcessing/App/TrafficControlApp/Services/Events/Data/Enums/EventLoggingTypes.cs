@@ -13,5 +13,6 @@ public enum EventLoggingTypes
     ThreadIdLogging,
     ExceptionKindEvent,
     SemaphoreAcquired,
-    SemaphoreReleased
+    SemaphoreReleased,
+    TotalProcessionTimeLogging
 }

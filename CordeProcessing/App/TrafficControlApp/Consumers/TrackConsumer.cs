@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using TrafficControlApp.Config;
 using TrafficControlApp.Consumers.Abstractions;
 using TrafficControlApp.Contexts;
 using TrafficControlApp.Models;
 using TrafficControlApp.Processors.Abstractions;
+using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Consumers;
 
@@ -14,6 +16,7 @@ public class TrackConsumer : ITrackConsumer
     private TrafficProcessingContext _context;
     private ApplicationConfiguration _config;
     private Func<TrafficProcessingContext> ConfigureDependentProcessors;
+    private  Stopwatch Stopwatch;
 
     public TrackConsumer(ApplicationConfiguration config,  TrafficProcessingContext context, Func<TrafficProcessingContext> configureDependentProcessors)
     {
@@ -25,7 +28,6 @@ public class TrackConsumer : ITrackConsumer
     public async Task ConsumeAllAsync(ISourceBlock<Track> buffer, Func<ITargetBlock<Track>, Task> startProducing)
     {
         _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
-        // _context.VehicleRootProcessor.CurrentProcessingCompleted += VehicleRootProcessorOnCurrentProcessingCompleted;
         var consumerBlock = new ActionBlock<Track>(
             track =>
             {
@@ -41,29 +43,31 @@ public class TrackConsumer : ITrackConsumer
             { PropagateCompletion = _config.PropagateCompletion });
 
         await startProducing(consumerBlock);
-        var watch = System.Diagnostics.Stopwatch.StartNew();
+        Stopwatch = System.Diagnostics.Stopwatch.StartNew();
         await consumerBlock.Completion;
-        watch.Stop();
-        var elapsedMs = watch.ElapsedMilliseconds;
-        var sec = TimeSpan.FromMilliseconds(elapsedMs).TotalSeconds;
-        Console.WriteLine($"!!!!!!!!!!!!!!!Total Time:{sec} SECONDS!!!!!!!!!!!!!!!!!");
+        // watch.Stop();
+        // var elapsedMs = watch.ElapsedMilliseconds;
+        // var sec = TimeSpan.FromMilliseconds(elapsedMs).TotalSeconds;
+        // Console.WriteLine($"!!!!!!!!!!!!!!!Total Time:{sec} SECONDS!!!!!!!!!!!!!!!!!");
+        
     }
     
 
     private TrafficProcessingContext GetFreshContext()
     {
+        
         return _context;
     }
 
-    private async Task RootProcessorOnNestedProcessingCompleted()
+    private  async Task RootProcessorOnNestedProcessingCompleted()
     {
-        // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
-        _context = ConfigureDependentProcessors();
-        _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
+        if (Stopwatch != null)
+        {
+            Stopwatch.Stop();
+            var elapsedMs = Stopwatch.ElapsedMilliseconds;
+            var sec = TimeSpan.FromMilliseconds(elapsedMs).TotalSeconds;
+            await _context.EventLogger.Log(sec.ToString(), EventLoggingTypes.TotalProcessionTimeLogging);
+            _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
+        }
     }
-
-    // private void ConfigureDependentProcessors()
-    // {
-    //     throw new NotImplementedException();
-    // }
 }

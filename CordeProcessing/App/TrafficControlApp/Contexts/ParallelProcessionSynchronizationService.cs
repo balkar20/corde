@@ -1,18 +1,17 @@
-﻿using System.Collections.Concurrent;
-using TrafficControlApp.Processors.Abstractions;
+﻿using TrafficControlApp.Processors.Abstractions;
 using TrafficControlApp.Services.Events.Abstractions;
 using TrafficControlApp.Services.Events.Data.Enums;
 
 namespace TrafficControlApp.Contexts;
 
-public class SyncContext<TInput>
+public class ParallelProcessionSynchronizationService<TInput>
 {
     private readonly IEventLoggingService? LoggingService;
     
     const string HimselfLabel = "Himself";
     public SemaphoreSlim SemaphoreSlim { get; set; } = new (1, 1);
 
-    public SyncContext(IEventLoggingService? loggingService)
+    public ParallelProcessionSynchronizationService(IEventLoggingService? loggingService)
     {
         LoggingService = loggingService;
     }
@@ -48,7 +47,7 @@ public class SyncContext<TInput>
                 processor.DependentProcessorsExecutingCount -= 1;
                 await LogAndRelease(acquireId, processor, executionName, true);
             }
-            await callback(input);   
+            await callback(input);  
         }
         finally
         {

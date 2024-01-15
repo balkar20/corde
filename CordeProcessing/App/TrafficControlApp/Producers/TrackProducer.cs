@@ -24,16 +24,9 @@ public class TrackProducer: ITrackProducer
         var sourceData = await _trackDevice.GiveMeTrackDataBunch("SomeTracks", config.MaxParallelConsumeCount);
         foreach (var track in sourceData.Tracks)
         {
-            var item = $"Item {track.ItemId + 1}";
-            // Console.WriteLine($"Producing {item}, ThreadId is: {Thread.CurrentThread.ManagedThreadId}, ThreadPool ?? {Thread.CurrentThread.IsThreadPoolThread}");
             await ProduceOne(target, track);
             
-            
             Treads.Add(Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine($"Produced {item}? ThreadId is: {Thread.CurrentThread.ManagedThreadId}, ThreadPool ?? {Thread.CurrentThread.IsThreadPoolThread}");
-            Console.WriteLine($"Current Ammount Of threads = {Treads.Count}");
-            //
-            // await target.SendAsync(track);
         }
 
         target.Complete();
@@ -41,7 +34,6 @@ public class TrackProducer: ITrackProducer
 
     private async Task ProduceOne(ITargetBlock<Track> target, Track track)
     {
-        //emulating wait for period
         await Task.Delay(config.ProduceSpeed);
         await target.SendAsync(track);
     }

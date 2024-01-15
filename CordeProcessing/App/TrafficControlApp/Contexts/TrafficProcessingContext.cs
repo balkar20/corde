@@ -8,14 +8,13 @@ using TrafficControlApp.Services;
 using TrafficControlApp.Services.Analysers.Abstractions;
 using TrafficControlApp.Services.Analysers.Services;
 using TrafficControlApp.Services.Events.Abstractions;
-using TrafficControlApp.Services.Storage.Abstractions;
 using TrafficControlApp.Services.Storage.Services;
 
 namespace TrafficControlApp.Contexts;
 
 public class TrafficProcessingContext(ApplicationConfiguration applicationConfiguration)
 {
-    private readonly IEventLoggingService _logger;
+    public  IEventLoggingService EventLogger{ get; private set; }
 
     #region Processors
 
@@ -32,9 +31,11 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
 
     public void InitializeProcessors(ApplicationConfiguration configuration, IMapper mapper, IEventLoggingService logger)
     {
+        EventLogger = logger;
         var analysers = GetAnalysers();
         var repositories = GetRepositories();
         VehicleRootProcessor = new VehicleTypeProcessor(repositories.vehicleTypeRepository, analysers.vehicleTypeAnalyzerService, mapper, logger, "FirstTypeProcessor");
+        // VehicleRootProcessor.SubscribeToNestedCompletion(async () => Console.WriteLine("pppppppppppppppppppppppppppppppppppp"));
         VehicleSeasonProcessor = new VehicleSeasonProcessor(repositories.seasonRepository, analysers.seasonAnalyzerService, mapper, logger, "FirstSeasonProcessor");
         VehicleColorProcessor = new VehicleColorProcessor(repositories.colorRepository, analysers.colorAnalyzerService, mapper, logger, "FirstColorProcessor");
         VehicleMarkProcessor = new VehicleMarkProcessor(repositories.markRepository, analysers.markAnalyzerService, mapper, logger, "FirstMarkProcessor");

@@ -1,8 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Diagnostics;
-using TrafficControlApp.Models;
-using TrafficControlApp.Models.Items.Analysing;
-using TrafficControlApp.Models.Results;
-using TrafficControlApp.Models.Results.Analyse;
+﻿using TrafficControlApp.Models.Results;
 using TrafficControlApp.Models.Results.Analyse.Abstractions;
 
 namespace TrafficControlApp.RandomGeneration;

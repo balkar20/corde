@@ -1,7 +1,4 @@
-﻿using TrafficControlApp.Contexts;
-using TrafficControlApp.Processors;
-using TrafficControlApp.Root;
-using TrafficControlApp.Services;
+﻿using TrafficControlApp.Root;
 
 namespace TrafficControlApp.Tests.StartUp;
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using TrafficControlApp.Config;
 using TrafficControlApp.Contexts;
-using TrafficControlApp.Models;
 using TrafficControlApp.Processors.Abstractions;
 
 namespace TrafficControlApp.Processors.ProcessorOrchestration;

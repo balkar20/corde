@@ -23,6 +23,7 @@
       <Folder Include="Config\DependencyConfiguration\Configurators\" />
       <Folder Include="Models\Items\Abstractions\" />
       <Folder Include="Models\Results\Process\" />
+      <Folder Include="Processors\Abstractions\Events\" />
     </ItemGroup>
 
     <ItemGroup>

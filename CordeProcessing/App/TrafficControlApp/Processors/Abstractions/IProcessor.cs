@@ -2,36 +2,33 @@ using System.Collections.Concurrent;
 
 namespace TrafficControlApp.Processors.Abstractions;
 
-public interface IProcessor<TInputData>
+public interface IProcessor<TInput>
 {
+    //Properties
     public bool IsCompletedNestedProcessing { get; set; }
     public bool IsCompletedCurrentProcessing { get; set; }
     public bool IsStartedSelfProcessing { get; set; }
-    string InputId { get; set; }
     bool IsRoot { get; set; }
-    bool IsEventCompletionFired {get; set; }
     int TotalAmountOfProcessors {get; set; }
     
     
-    ConcurrentStack<IProcessor<TInputData>> ProcessorsExecuting { get; set; }
+    ConcurrentStack<IProcessor<TInput>> ProcessorsExecuting { get; set; }
     string ProcessorTypeName { get; set; }
     string ProcessorName { get; set; }
     int DependentProcessorsExecutingCount { get; set; }
-    IProcessor<TInputData>? ParentProcessor { get; set; }
-    IProcessor<TInputData>? RootProcessorFromDependentQueue { get; set; }
-    ConcurrentQueue<IProcessor<TInputData>> DependedProcessors { get; set; }
-
-    // IProcessor<TInputData>? NextInQueueProcessor { get; set; }
-    Task ProcessNextAsync(TInputData inputData);
-    Task DoConditionalProcession(TInputData inputData);
-    void AddDependentProcessor(IProcessor<TInputData> dependentProcessor);
-    event NotifyNestedProcessingCompleted NestedProcessingCompletedEvent;
-    event NotifyCurrentProcessingCompleted CurrentProcessingCompletedEvent;
-    event NotifyParentProcessingCompleted ParentProcessingCompletedEvent;
-    delegate Task NotifyNestedProcessingCompleted();
-    delegate Task NotifyCurrentProcessingCompleted(IProcessor<TInputData> processor, int processionId);
-    delegate Task NotifyParentProcessingCompleted(TInputData inputData);
-
-    Task  FireCurrentProcessingCompletedEvent(IProcessor<TInputData> inputData);
-    // IProcessor<TInput> GetNextProcessor()
+    IProcessor<TInput>? ParentProcessor { get; set; }
+    IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
+    ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; }
+    
+    Task ProcessNextAsync(TInput inputData);
+    Task DoConditionalProcession(TInput inputData);
+    void AddDependentProcessor(IProcessor<TInput> dependentProcessor);
+    void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents);
+    int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
+    int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
+    
+    //Events
+    event Func<Task> NestedProcessingCompletedEvent;
+    event Func<IProcessor<TInput>, int, Task> CurrentProcessingCompletedEvent;
+    event Func<TInput, Task> ParentProcessingCompletedEvent;
 }

@@ -30,6 +30,7 @@ public class EventLoggingService: IEventLoggingService
             EventLoggingTypes.ExceptionKindEvent => $"ExceptionKindEvent :{eventDataString} for Processor : {additional}",
             EventLoggingTypes.SemaphoreAcquired => $"SemaphoreAcquired for Processor:{eventDataString}, {(string.IsNullOrWhiteSpace(additional) ? string.Empty : (hasDepRoot + additional))}",
             EventLoggingTypes.SemaphoreReleased => $"SemaphoreReleased for Processor:{eventDataString}, Execution name: {additional}",
+            EventLoggingTypes.TotalProcessionTimeLogging => $"\"!!!!!!!!!!!!!!!Total Time :{eventDataString} SECONDS.!!!!!!!!!!!!!!!!!\"",
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
         _logger.Information(message);
