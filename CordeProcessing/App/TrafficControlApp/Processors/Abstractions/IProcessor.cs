@@ -19,7 +19,8 @@ public interface IProcessor<TInput>
     IProcessor<TInput>? ParentProcessor { get; set; }
     IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
     ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; }
-    
+    bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
+
     Task ProcessNextAsync(TInput inputData);
     Task DoConditionalProcession(TInput inputData);
     void AddDependentProcessor(IProcessor<TInput> dependentProcessor);

@@ -57,14 +57,6 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         }
     }
 
-    private void RootProcessorOnNestedProcessingCompleted()
-    {
-        // _context.InitializeProcessors(applicationConfiguration, _mapper, new EventLoggingService(_logger));
-        ConfigureDependentProcessors();
-        // _context.VehicleRootProcessor.NestedProcessingCompletedEvent += RootProcessorOnNestedProcessingCompleted;
-        // _logger.Warning("Root Processor was completed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    }
-
     protected override void CreateConfiguration()
     {
         var builder = new ConfigurationBuilder();
@@ -137,7 +129,6 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
         var loggerService = new EventLoggingService(_logger);
 
         _context.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
-        // _context.VehicleRootProcessor.NestedProcessingCompletedEvent += async () => await VehicleRootProcessorOnNestedProcessingCompletedEvent();
         
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
@@ -167,11 +158,6 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;
-    }
-
-    private async Task VehicleRootProcessorOnNestedProcessingCompletedEvent()
-    {
-        Console.WriteLine("DoDoDo");
     }
 
     private List<TemplateProcessor<Track, PoolProcessionResult>> GetTemplateProcessorsWithNames(string[] names, EventLoggingService eventLoggingService, TrafficProcessingContext context)

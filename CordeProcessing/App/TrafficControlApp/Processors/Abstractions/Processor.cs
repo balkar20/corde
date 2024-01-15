@@ -41,7 +41,9 @@ public abstract class Processor<TInput, TProcessionResult>(
     public bool IsCompletedCurrentProcessing { get; set; }
 
     public bool IsStartedSelfProcessing { get; set; }
-
+    
+    public bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
+    
     public IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
     public IProcessor<TInput>? ParentProcessor { get; set; }
 
@@ -119,11 +121,6 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     public event Func<TInput, Task>? ParentProcessingCompletedEvent;
 
-    // public async Task FireCurrentProcessingCompletedEvent(IProcessor<TInput> inputData)
-    // {
-    //     await CurrentProcessingCompletedEvent(inputData, 1);
-    // }
-
     public int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor)
     {
         if (parentProcessor != null)
@@ -192,7 +189,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         var nextInQueProcessor = GetNextProcessorFromDependants();
 
         // IF   root processor than was  set from queue during parallel execution, then  execute it 
-        if (RootProcessorFromDependentQueue != null)
+        if (RootProcessorFromDependentQueue != this && RootProcessorFromDependentQueue != null)
         {
             await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
 

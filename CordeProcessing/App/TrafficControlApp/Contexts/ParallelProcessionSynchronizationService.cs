@@ -33,26 +33,32 @@ public class ParallelProcessionSynchronizationService<TInput>
             !dependantProcessor.IsStartedSelfProcessing;
 
         if (dependantProcessor == null &&
+            !processor.GotDependentProcessorsExecutingCountFromDependentRoot &&
             processor.RootProcessorFromDependentQueue?.DependedProcessors.Count > 0 &&
             processor.RootProcessorFromDependentQueue.IsCompletedCurrentProcessing &&
             !processor.RootProcessorFromDependentQueue.IsCompletedNestedProcessing)
         {
             processor.DependentProcessorsExecutingCount =
                 processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
+            processor.GotDependentProcessorsExecutingCountFromDependentRoot = true;
         }
         try
         {
             if (processor.DependentProcessorsExecutingCount > 0 && !isNeedToKeepLockedUntilDependentRootReleased)
             {
-                processor.DependentProcessorsExecutingCount -= 1;
+                processor.DependentProcessorsExecutingCount --;
                 await LogAndRelease(acquireId, processor, executionName, true);
             }
-            await callback(input);  
+            await callback(input);   
         }
         finally
         {
             if (isNeedToKeepLock || (!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
             {
+                if ((!isNeedToKeepLock && isNeedToKeepLockedUntilDependentRootReleased))
+                {
+                    processor.DependentProcessorsExecutingCount--;
+                }
                 await LogAndRelease(acquireId, processor, executionName);
             }
         }
