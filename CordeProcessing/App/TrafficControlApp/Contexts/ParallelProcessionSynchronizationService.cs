@@ -150,6 +150,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         var isNeedToKeepLockedUntilDependentRootReleased =
             processor.IsStartedSelfProcessing &&
             processor.IsCompletedCurrentProcessing &&
+            !processor.IsHaveToPassNextRoot &&
             dependentProcessorExists &&
             dependantProcessor.IsRoot &&
             !dependantProcessor.IsStartedSelfProcessing;

@@ -234,11 +234,13 @@ public abstract class Processor<TInput, TProcessionResult>(
                  RootProcessorFromDependentQueue.IsCompletedCurrentProcessing && 
                  nextInQueProcessor == null)
         {
-            await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
             if (nextInQueProcessor != null && nextInQueProcessor.IsRoot)
             {
+                RootProcessorFromDependentQueue.IsHaveToPassNextRoot = true;
                 RootsFromDependantQueuePool.Add(nextInQueProcessor);
             }
+            await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
+            RootProcessorFromDependentQueue.IsHaveToPassNextRoot = false;
             // if (RootProcessorFromDependentQueue.DependedProcessors.TryPeek(out var dp) && dp.IsRoot)
             // {
             //     RootsFromDependantQueuePool.Add(dp);
