@@ -37,15 +37,18 @@ public abstract class Processor<TInput, TProcessionResult>(
     public string ProcessorTypeName { get; set; }
     public string ProcessorName { get; set; } = processorName;
 
-    public bool IsCompletedNestedProcessing { get; set; }
+    public bool IsCompletedNestedProcessing { get;  }
     public bool IsCompletedCurrentProcessing { get; set; }
 
-    public bool IsStartedSelfProcessing { get; set; }
+    public bool IsStartedSelfProcessing { get; set;}
+    public bool IsHaveToPassNextRoot { get; set; }
     
     public bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
     
     public IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
     public IProcessor<TInput>? ParentProcessor { get; set; }
+    
+    public ConcurrentBag<IProcessor<TInput>>? RootsFromDependantQueuePool { get; } = new ();
 
     #endregion
 
@@ -97,7 +100,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         //This block Executing in Root thread and only in case Root is fully completed
         if (isCurrentTreadForCompletedRoot)
         {
-            await CheckAndProcessDependentProcessor(inputData);
+            await CheckAndProcessDependentProcessorOrDependantRoot(inputData);
         }
     }
 
@@ -131,8 +134,8 @@ public abstract class Processor<TInput, TProcessionResult>(
 
         if (parentProcessor != null)
         {
+            parentProcessor.DecrementParentsTotalCount(count, parentProcessor.ParentProcessor);
             parentProcessor.TotalAmountOfProcessors -= count;
-            return parentProcessor.DecrementParentsTotalCount(count, parentProcessor.ParentProcessor);
         }
         
         // TotalAmountOfProcessors -= count;
@@ -153,32 +156,28 @@ public abstract class Processor<TInput, TProcessionResult>(
     {
         await NestedProcessingCompletedEvent.Invoke();
     }
-
-    #endregion
-
-
-    #region Protected Methods
-
-    #endregion
-
-
-    #region Private Methods
-
-    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
+    
+    public void RecursivelySetRootProcessorForDependentQueueToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
     {
-        //Here we check Dependents and set ProcessorsExecutingCount for avoid LOCK
-        if (DependedProcessors.Any())
+        if (processor.IsRoot && parentProcessor == null)
         {
-            DependentProcessorsExecutingCount = DependedProcessors.Count;
+            return;
         }
-
-        //Here we just ProcessLogic because it root for some Dependencies
-        await ProcessLogicAndComplete(inputData);
-
-        RecursivelySetParent(this, this.ParentProcessor);
+        if (parentProcessor?.ParentProcessor == null)
+        {
+            parentProcessor.RootProcessorFromDependentQueue = processor;
+            // RootsFromDependantQueuePool?.Add(processor);
+            parentProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = false;
+            return;
+        }
+        if (parentProcessor != null)
+        {
+            RecursivelySetRootProcessorForDependentQueueToParent(processor, parentProcessor.ParentProcessor);
+            return;
+        }
     }
-
-    public void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
+    
+    public void RecursivelySetRootProcessorForDependentQueuePoolToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
     {
         if (processor.IsRoot && parentProcessor == null)
         {
@@ -192,22 +191,66 @@ public abstract class Processor<TInput, TProcessionResult>(
         }
         if (parentProcessor != null)
         {
-            RecursivelySetParent(processor, parentProcessor.ParentProcessor);
+            RecursivelySetRootProcessorForDependentQueuePoolToParent(processor, parentProcessor.ParentProcessor);
             return;
         }
-       
     }
 
-    private async Task CheckAndProcessDependentProcessor(TInput inputData)
+    #endregion
+    
+    #region Private Methods
+
+    private async Task ProcessLogicForRootBeforeStartCallingDependencies(TInput inputData)
+    {
+        //Here we check Dependents and set ProcessorsExecutingCount for avoid LOCK
+        if (DependedProcessors.Any())
+        {
+            DependentProcessorsExecutingCount = DependedProcessors.Count;
+        }
+
+        //Here we just ProcessLogic because it root for some Dependencies
+        await ProcessLogicAndComplete(inputData);
+
+        RecursivelySetRootProcessorForDependentQueuePoolToParent(this, this.ParentProcessor);
+    }
+
+    private async Task CheckAndProcessDependentProcessorOrDependantRoot(TInput inputData)
     {
         var nextInQueProcessor = GetNextProcessorFromDependants();
 
         // IF   root processor than was  set from queue during parallel execution, then  execute it 
-        if (RootProcessorFromDependentQueue != this && RootProcessorFromDependentQueue != null)
+        if (RootsFromDependantQueuePool.TryTake(out var rootProcessorFromPool))
         {
-            await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
+            await rootProcessorFromPool.DoConditionalProcession(inputData);
+            if (rootProcessorFromPool.DependedProcessors.TryPeek(out var pp))
+            {
+                RootsFromDependantQueuePool.Add(rootProcessorFromPool);
+            }
+            
             return;
         }
+        
+        if (RootProcessorFromDependentQueue != null && 
+                 RootProcessorFromDependentQueue.IsCompletedCurrentProcessing && 
+                 nextInQueProcessor == null)
+        {
+            await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
+            if (nextInQueProcessor != null && nextInQueProcessor.IsRoot)
+            {
+                RootsFromDependantQueuePool.Add(nextInQueProcessor);
+            }
+            // if (RootProcessorFromDependentQueue.DependedProcessors.TryPeek(out var dp) && dp.IsRoot)
+            // {
+            //     RootsFromDependantQueuePool.Add(dp);
+            // }
+            return;
+        }
+
+        // if (RootProcessorFromDependentQueue != this && RootProcessorFromDependentQueue != null)
+        // {
+        //     await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
+        //     return;
+        // }
 
         //If we dont have root processor set from queue and remain in queue processors => Then we execute queue processor
         if (nextInQueProcessor != null)
@@ -229,10 +272,14 @@ public abstract class Processor<TInput, TProcessionResult>(
         IsStartedSelfProcessing = true;
         await ProcessLogic(input);
         IsCompletedCurrentProcessing = true;
+                
+        var totalCount = DecrementParentsTotalCount(1, this.ParentProcessor);
+        if (totalCount == 0)
+        {
+            
+        }
         
         TotalAmountOfProcessors--;
-        
-        DecrementParentsTotalCount(1, this.ParentProcessor);
     }
 
     #endregion

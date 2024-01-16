@@ -5,11 +5,13 @@ namespace TrafficControlApp.Processors.Abstractions;
 public interface IProcessor<TInput>
 {
     //Properties
-    public bool IsCompletedNestedProcessing { get; set; }
-    public bool IsCompletedCurrentProcessing { get; set; }
-    public bool IsStartedSelfProcessing { get; set; }
+    bool IsCompletedNestedProcessing { get;  }
+    bool IsCompletedCurrentProcessing { get; set; }
+    bool IsStartedSelfProcessing { get; set; }
     bool IsRoot { get; set; }
     int TotalAmountOfProcessors {get; set; }
+    
+    bool IsHaveToPassNextRoot {get; set; }
     
     
     ConcurrentStack<IProcessor<TInput>> ProcessorsExecuting { get; set; }
@@ -19,6 +21,7 @@ public interface IProcessor<TInput>
     IProcessor<TInput>? ParentProcessor { get; set; }
     IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
     ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; }
+    ConcurrentBag<IProcessor<TInput>>? RootsFromDependantQueuePool { get; }
     bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
 
     Task ProcessNextAsync(TInput inputData);
@@ -27,7 +30,8 @@ public interface IProcessor<TInput>
     void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents);
     int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
     int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
-    void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
+    void RecursivelySetRootProcessorForDependentQueueToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
+    void RecursivelySetRootProcessorForDependentQueuePoolToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
     Task SignalNestedProcessingCompletion();
     
     //Events
