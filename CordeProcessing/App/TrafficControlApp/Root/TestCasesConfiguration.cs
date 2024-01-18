@@ -24,20 +24,31 @@ public class TestCasesConfiguration
         //TypeDependant
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
         _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleDangerProcessor);
+        _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
         
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
+        _context.VehicleColorProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
+        _context.VehicleColorProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
         
         var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", _context.GetLongRunningTask);
         var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
         var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
         var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc);
-        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc2);
-        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc3);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
+        
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
+        // _context.VehicleSeasonProcessor.AddDependentProcessor(newProc3);
         
 
+        string[] newNames = {"Volvo", "BMW", "Ford"};
+        string[] newNames2 = {"Koko", "Mila", "Oni"};
+        var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
+        var dep2 = GetTemplateProcessorsWithNames(newNames2, loggerService, _context);
+        var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
+        var depsQueue2 = new ConcurrentQueue<IProcessor<Track>>(dep2);
+        // newProc2.SetDependents(depsQueue);
+        newProc4.SetDependents(depsQueue);
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;
     }
@@ -66,10 +77,20 @@ public class TestCasesConfiguration
         var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", _context.GetLongRunningTask);
         var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
         var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
+        
         var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc2);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc3);
+        var newProc5 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        var newProc6 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        var newProc7 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        var newProc8 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        var newProc9 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
+        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc);
+        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc2);
+        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc3);
+        // newProc3.AddDependentProcessor(newProc7);
+        // _context.VehicleTrafficProcessor.AddDependentProcessor(newProc);
+        // _context.VehicleTrafficProcessor.AddDependentProcessor(newProc2);
+        // _context.VehicleTrafficProcessor.AddDependentProcessor(newProc3);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
         // _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
@@ -79,8 +100,7 @@ public class TestCasesConfiguration
         var dep2 = GetTemplateProcessorsWithNames(newNames2, loggerService, _context);
         var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
         var depsQueue2 = new ConcurrentQueue<IProcessor<Track>>(dep2);
-        newProc2.SetDependents(depsQueue);
-        newProc3.SetDependents(depsQueue2);
+        // newProc2.SetDependents(depsQueue);
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
         return _context;

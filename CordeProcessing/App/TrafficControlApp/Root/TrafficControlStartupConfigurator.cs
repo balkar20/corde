@@ -94,12 +94,12 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
             },
             VehicleDangerAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(3),
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
                 // TimeForAnalyse = TimeSpan.FromSeconds(30),
             },
             VehicleMarkAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(3),
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
                 // TimeForAnalyse = TimeSpan.FromSeconds(30),
             }
         };
