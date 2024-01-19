@@ -33,11 +33,11 @@ public class TestCasesConfiguration
         var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
         var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
         var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
-        
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
-        _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
+        _context.VehicleSeasonProcessor.AddDependentProcessor(newProc3);
+        // _context.VehicleSeasonProcessor.AddDependentProcessor(newProc4);
+        //
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc);
+        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
         // _context.VehicleSeasonProcessor.AddDependentProcessor(newProc3);
         
 

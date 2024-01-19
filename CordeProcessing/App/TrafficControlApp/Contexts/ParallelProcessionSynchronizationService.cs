@@ -159,11 +159,16 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         var dependentsCount = processor.DependedProcessors.Count;
         
         var isNeedToKeepLockedUntilDependentRootReleased =
-            dependentProcessorExists &&
-            !processor.IsStartedSelfProcessing ||
+            (dependentProcessorExists &&
+            !processor.IsStartedSelfProcessing) ||
             (processor.IsStartedSelfProcessing &&
              processor.IsCompletedSelfProcessing &&
-             dependentsCount == 0);
+             dependentsCount == 0)
+             || (processor.IsStartedSelfProcessing &&
+               processor.IsCompletedSelfProcessing &&
+               dependentsCount == 1 &&
+               processor.IsDependantRoot);
+        
         return isNeedToKeepLockedUntilDependentRootReleased;
     }
 
@@ -180,10 +185,10 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
     private int  DecrementDependantExecutingCount(IProcessor<TInput> processor)
     {
         if (_isTopRootExecuting)
-            return -- processor.DependentProcessorsExecutingCount;
+            return --processor.DependentProcessorsExecutingCount;
 
         if (processor.RootProcessorFromDependentQueue != null)
-            return -- processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
+            return --processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
         return 0;
     }
     
