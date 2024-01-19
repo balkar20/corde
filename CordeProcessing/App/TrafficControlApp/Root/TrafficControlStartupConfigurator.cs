@@ -94,12 +94,12 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
             },
             VehicleDangerAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(3),
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
                 // TimeForAnalyse = TimeSpan.FromSeconds(30),
             },
             VehicleMarkAnalyseConfig = new()
             {
-                TimeForAnalyse = TimeSpan.FromSeconds(3),
+                TimeForAnalyse = TimeSpan.FromSeconds(2),
                 // TimeForAnalyse = TimeSpan.FromSeconds(30),
             }
         };
@@ -126,52 +126,8 @@ public class TrafficControlStartupConfigurator : StartupConfigurator
 
     protected override TrafficProcessingContext ConfigureDependentProcessors()
     {
-        _context = new TrafficProcessingContext(applicationConfiguration);
-        
-        var loggerService = new EventLoggingService(_logger);
-
-        _context.InitializeProcessors(applicationConfiguration, _mapper, loggerService);
-        
-        //TypeDependant
-        _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleMarkProcessor);
-        _context.VehicleRootProcessor.AddDependentProcessor(_context.VehicleDangerProcessor);
-        
-        
-        //MarkDependant                                  
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
-        // _context.VehicleMarkProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);                                
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleColorProcessor);
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleSeasonProcessor);
-        _context.VehicleDangerProcessor.AddDependentProcessor(_context.VehicleTrafficProcessor);
-
-        var newProc = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFirstProcessor", _context.GetLongRunningTask);
-        var newProc2 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateSecondProcessor", _context.GetLongRunningTask);
-        var newProc3 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateThirdProcessor", _context.GetLongRunningTask);
-        var newProc4 = new TemplateProcessor<Track, PoolProcessionResult>(loggerService, "TemplateFourProcessor", _context.GetLongRunningTask);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc2);
-        _context.VehicleTrafficProcessor.AddDependentProcessor(newProc3);
-        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc2);
-        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc3);
-        // _context.VehicleDangerProcessor.AddDependentProcessor(newProc4);
-        string[] newNames = {"Volvo", "BMW", "Ford"};
-        string[] newNames2 = {"Koko", "Mila", "Oni"};
-        var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
-        var dep2 = GetTemplateProcessorsWithNames(newNames2, loggerService, _context);
-        var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
-        var depsQueue2 = new ConcurrentQueue<IProcessor<Track>>(dep2);
-        newProc2.SetDependents(depsQueue);
-        newProc3.SetDependents(depsQueue2);
-
-        applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;
+        _context =  new TestCasesConfiguration().ConfigureDependentProcessorsCase1(applicationConfiguration, _logger, _mapper);
         return _context;
-    }
-
-    private List<TemplateProcessor<Track, PoolProcessionResult>> GetTemplateProcessorsWithNames(string[] names, EventLoggingService eventLoggingService, TrafficProcessingContext context)
-    {
-        return new List<TemplateProcessor<Track, PoolProcessionResult>>(names.Select(n =>
-            new TemplateProcessor<Track, PoolProcessionResult>(eventLoggingService, n, context.GetLongRunningTask)));
     }
     
     protected override void ConfigureLogging()

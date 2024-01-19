@@ -5,11 +5,15 @@ namespace TrafficControlApp.Processors.Abstractions;
 public interface IProcessor<TInput>
 {
     //Properties
-    public bool IsCompletedNestedProcessing { get; set; }
-    public bool IsCompletedCurrentProcessing { get; set; }
-    public bool IsStartedSelfProcessing { get; set; }
+    bool IsCompletedNestedProcessing { get;  }
+    bool IsCompletedSelfProcessing { get; set; }
+    bool IsStartedSelfProcessing { get; set; }
     bool IsRoot { get; set; }
+    bool IsDependantRoot { get; set; }
     int TotalAmountOfProcessors {get; set; }
+    
+    bool IsSomeOfNestedRootsProcessingCompletedEventFired {get; set; }
+    
     
     
     ConcurrentStack<IProcessor<TInput>> ProcessorsExecuting { get; set; }
@@ -19,6 +23,7 @@ public interface IProcessor<TInput>
     IProcessor<TInput>? ParentProcessor { get; set; }
     IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
     ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; }
+    ConcurrentQueue<IProcessor<TInput>>? RootsFromDependantQueuePool { get; }
     bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
 
     Task ProcessNextAsync(TInput inputData);
@@ -27,11 +32,16 @@ public interface IProcessor<TInput>
     void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents);
     int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
     int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor);
-    void RecursivelySetParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
-    Task SignalNestedProcessingCompletion();
+    void RecursivelySetRootProcessorForDependentQueueToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
+    void RecursivelySetRootProcessorForDependentQueuePoolToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor);
+    Task SignalNestedProcessingCompletionEvent();
+    Task SignalDependantProcessorWasDequeuedEvent();
+    Task SignalSomeOfNestedRootsProcessingCompletedEvent();
     
     //Events
     event Func<Task> NestedProcessingCompletedEvent;
-    event Func<IProcessor<TInput>, int, Task> CurrentProcessingCompletedEvent;
+    event Func<Task> SomeOfNestedRootsProcessingCompletedEvent;
+    event Func<Task> DependantProcessorWasDequeuedEvent;
+    event Func<Task> CurrentProcessingCompletedEvent;
     event Func<TInput, Task> ParentProcessingCompletedEvent;
 }
