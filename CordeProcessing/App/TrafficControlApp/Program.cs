@@ -1,6 +1,6 @@
-﻿using TrafficControlApp.Exceptions;
-using TrafficControlApp.Exceptions.Abstractions;
-using TrafficControlApp.Root;
+﻿using ParallelProcessing.Exceptions;
+using ParallelProcessing.Exceptions.Abstractions;
+using ParallelProcessing.Root;
 
 var startUpConfigurator = new TrafficControlStartupConfigurator();
 

@@ -20,16 +20,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Config\DependencyConfiguration\Configurators\" />
-      <Folder Include="Models\Items\Abstractions\" />
-      <Folder Include="Models\Results\Process\" />
-      <Folder Include="Processors\Abstractions\Events\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Update="appsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ParallelProcessing\ParallelProcessing.csproj" />
     </ItemGroup>
 
 </Project>

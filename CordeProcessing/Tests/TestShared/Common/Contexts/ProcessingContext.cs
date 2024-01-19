@@ -1,6 +1,6 @@
 ﻿using Moq;
-using TrafficControlApp.Models;
-using TrafficControlApp.Processors.Abstractions;
+using ParallelProcessing.Models;
+using ParallelProcessing.Processors.Abstractions;
 
 namespace Common.Contexts;
 

@@ -2,16 +2,16 @@ using System.Collections;
 using AutoMapper;
 using BenchmarkDotNet.Jobs;
 using Moq;
-using TrafficControlApp.ClientDevices.Devices;
-using TrafficControlApp.Mapping;
-using TrafficControlApp.Models;
-using TrafficControlApp.Models.Items.Analysing;
-using TrafficControlApp.Models.Results;
-using TrafficControlApp.Services;
-using TrafficControlApp.Services.Analysers.Abstractions;
-using TrafficControlApp.Services.Storage.Services;
+using ParallelProcessing.ClientDevices.Devices;
+using ParallelProcessing.Mapping;
+using ParallelProcessing.Models;
+using ParallelProcessing.Models.Items.Analysing;
+using ParallelProcessing.Models.Results;
+using ParallelProcessing.Services;
+using ParallelProcessing.Services.Analysers.Abstractions;
+using ParallelProcessing.Services.Storage.Services;
 
-namespace TrafficControlApp.Tests.StartUp;
+namespace ParallelProcessing.Tests.StartUp;
 
 public class RunTest
 {

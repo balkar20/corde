@@ -1,5 +1,5 @@
 ﻿using Moq;
-using TrafficControlApp.Services.Analysers.Abstractions;
+using ParallelProcessing.Services.Analysers.Abstractions;
 
 namespace Common.Contexts;
 
