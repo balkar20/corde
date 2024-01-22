@@ -50,6 +50,7 @@ packages/
 [Rr]elease/
 [Rr]eleases/
 x64/
+logs/
 x86/
 bld/
 [Bb]in/

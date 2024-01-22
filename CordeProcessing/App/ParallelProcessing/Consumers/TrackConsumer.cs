@@ -32,15 +32,17 @@ public class TrackConsumer : ITrackConsumer
             track =>
             {
                 var ctxt = GetFreshContext();
-                
+
                 //todo Wait for event before ProcessNext
-                return  ctxt.VehicleRootProcessor.ProcessNextAsync(track);
+                return ctxt.VehicleRootProcessor.ProcessNextAsync(track);
             },
-            new ExecutionDataflowBlockOptions 
-            { BoundedCapacity = _config.BoundedCapacity,
-                MaxDegreeOfParallelism = _config.MaxParallelConsumeCount });
-        buffer.LinkTo(consumerBlock, new DataflowLinkOptions() 
-            { PropagateCompletion = _config.PropagateCompletion });
+            new ExecutionDataflowBlockOptions
+            {
+                BoundedCapacity = _config.BoundedCapacity,
+                MaxDegreeOfParallelism = _config.MaxParallelConsumeCount
+            });
+        buffer.LinkTo(consumerBlock, new DataflowLinkOptions()
+        { PropagateCompletion = _config.PropagateCompletion });
 
         await startProducing(consumerBlock);
         Stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -49,7 +51,7 @@ public class TrackConsumer : ITrackConsumer
         // var elapsedMs = watch.ElapsedMilliseconds;
         // var sec = TimeSpan.FromMilliseconds(elapsedMs).TotalSeconds;
         // Console.WriteLine($"!!!!!!!!!!!!!!!Total Time:{sec} SECONDS!!!!!!!!!!!!!!!!!");
-        
+
     }
     
 

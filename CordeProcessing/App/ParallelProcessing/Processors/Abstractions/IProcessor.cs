@@ -11,6 +11,7 @@ public interface IProcessor<TInput>
     bool IsRoot { get; set; }
     bool IsDependantRoot { get; set; }
     int TotalAmountOfProcessors {get; set; }
+    int InitialAmountOfNotExecutedDependantProcessors {get; set; }
     
     bool IsSomeOfNestedRootsProcessingCompletedEventFired {get; set; }
     

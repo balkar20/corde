@@ -26,6 +26,8 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     public ConcurrentStack<IProcessor<TInput>> ProcessorsExecuting { get; set; } = new();
 
+     public SemaphoreSlim SemaphoreSlim { get; } = new (1, 1);
+
     public int DependentProcessorsExecutingCount { get; set; }
 
     public ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; } = new();
@@ -40,6 +42,9 @@ public abstract class Processor<TInput, TProcessionResult>(
     public string ProcessorName { get; set; } = processorName;
 
     public bool IsCompletedNestedProcessing { get;  }
+
+    public int InitialAmountOfNotExecutedDependantProcessors {get; set; }
+
     public bool IsCompletedSelfProcessing { get; set; }
 
     public bool IsStartedSelfProcessing { get; set;}
@@ -88,7 +93,8 @@ public abstract class Processor<TInput, TProcessionResult>(
         if (!IsRoot)
         {
             IsStartedSelfProcessing = true;
-            SignalDependantProcessorWasDequeuedEvent();
+            // this.CurrentProcessingCompletedEvent +=  async () => await SignalSomeOfNestedRootsProcessingCompletedEvent();
+            // RecursivelySubscribeRootProcessorCompletedEventParent(this, this.ParentProcessor);
             await ProcessLogicAndComplete(inputData);
             IsCompletedSelfProcessing = true;
             return;
@@ -124,6 +130,7 @@ public abstract class Processor<TInput, TProcessionResult>(
 
         TotalAmountOfProcessors++;
         DependentProcessorsExecutingCount++;
+        InitialAmountOfNotExecutedDependantProcessors ++;
         IncrementParentsTotalCount(1, ParentProcessor);
         this.IsRoot = true;
 
@@ -163,25 +170,33 @@ public abstract class Processor<TInput, TProcessionResult>(
         this.IsRoot = true;
         DependedProcessors = dependents;
         TotalAmountOfProcessors += dependents.Count;
+        InitialAmountOfNotExecutedDependantProcessors += dependents.Count;
         IncrementParentsTotalCount(dependents.Count, ParentProcessor);
     }
 
     public async Task SignalNestedProcessingCompletionEvent()
     {
-        await NestedProcessingCompletedEvent?.Invoke();
+        if (NestedProcessingCompletedEvent != null)
+            await NestedProcessingCompletedEvent?.Invoke();
     }
 
     public async Task SignalDependantProcessorWasDequeuedEvent()
     {
-        await DependantProcessorWasDequeuedEvent?.Invoke();
+        if (DependantProcessorWasDequeuedEvent != null)
+            await DependantProcessorWasDequeuedEvent?.Invoke();
     }
 
     public async Task SignalSomeOfNestedRootsProcessingCompletedEvent()
     {
-        if (!IsSomeOfNestedRootsProcessingCompletedEventFired)
+        if (SomeOfNestedRootsProcessingCompletedEvent != null)
         {
             await SomeOfNestedRootsProcessingCompletedEvent?.Invoke();
             IsSomeOfNestedRootsProcessingCompletedEventFired = true;
+        }
+
+        if (ParentProcessor != null)
+        {
+            await ParentProcessor.SignalDependantProcessorWasDequeuedEvent();
         }
     }
     
@@ -194,7 +209,6 @@ public abstract class Processor<TInput, TProcessionResult>(
         if (parentProcessor?.ParentProcessor == null)
         {
             parentProcessor.RootProcessorFromDependentQueue = processor;
-            parentProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = false;
             return;
         }
         if (parentProcessor != null)
@@ -215,8 +229,6 @@ public abstract class Processor<TInput, TProcessionResult>(
             parentProcessor.RootsFromDependantQueuePool.Enqueue(processor);
             processor.IsDependantRoot = true;
             
-            
-            parentProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = false;
             return;
         }
         if (parentProcessor != null)
@@ -235,8 +247,8 @@ public abstract class Processor<TInput, TProcessionResult>(
         if (parentProcessor?.ParentProcessor == null)
         {
             parentProcessor.IsSomeOfNestedRootsProcessingCompletedEventFired = false;
-            processor.CurrentProcessingCompletedEvent += async () => await parentProcessor
-                .SignalSomeOfNestedRootsProcessingCompletedEvent();
+            // processor.CurrentProcessingCompletedEvent += async () => await parentProcessor
+            //     .SignalSomeOfNestedRootsProcessingCompletedEvent();
             // parentProcessor.SomeOfNestedRootsProcessingCompletedEvent+= async () => await SignalSomeOfNestedRootsProcessingCompletedEvent();
             
             parentProcessor.GotDependentProcessorsExecutingCountFromDependentRoot = false;
@@ -288,10 +300,10 @@ public abstract class Processor<TInput, TProcessionResult>(
         if (RootProcessorFromDependentQueue != null && RootProcessorFromDependentQueue != this)
         {
             await RootProcessorFromDependentQueue.DoConditionalProcession(inputData);
-            if (RootProcessorFromDependentQueue.DependedProcessors.Count > 0)
-            {
-                RecursivelySetRootProcessorForDependentQueuePoolToParent(RootProcessorFromDependentQueue, ParentProcessor);
-            }
+            // if (RootProcessorFromDependentQueue.DependedProcessors.Count > 0)
+            // {
+            //     RecursivelySetRootProcessorForDependentQueuePoolToParent(RootProcessorFromDependentQueue, ParentProcessor);
+            // }
             return;
         }
         
@@ -325,8 +337,9 @@ public abstract class Processor<TInput, TProcessionResult>(
             // {
             //     nextInQueueProcessor.IsHaveToPassNextRoot = true;
             // }
-            
+            // InitialAmountOfNotExecutedDependantProcessors --;
             await nextInQueueProcessor.DoConditionalProcession(inputData);
+
         }
     }
 
@@ -341,9 +354,33 @@ public abstract class Processor<TInput, TProcessionResult>(
     private async Task ProcessLogicAndComplete(TInput input)
     {
         IsStartedSelfProcessing = true;
+        var countOfDependants = DependedProcessors.Count;
+        if(ParentProcessor == null && IsRoot && RootProcessorFromDependentQueue != null){
+            countOfDependants = RootProcessorFromDependentQueue.DependedProcessors.Count;
+        }
+
         await ProcessLogic(input);
         
+        
         IsCompletedSelfProcessing = true;
+
+        if (ParentProcessor != null)
+        {
+            await SemaphoreSlim.WaitAsync();
+            try
+            {
+                ParentProcessor.InitialAmountOfNotExecutedDependantProcessors--;
+                if (ParentProcessor.InitialAmountOfNotExecutedDependantProcessors == 0)
+                {
+                    await ParentProcessor.SignalSomeOfNestedRootsProcessingCompletedEvent();
+                }
+            }
+            finally
+            {
+                SemaphoreSlim.Release();
+            }
+        }
+
         CurrentProcessingCompletedEvent?.Invoke();
         var totalCount = DecrementParentsTotalCount(1, this.ParentProcessor);
         if (totalCount == 0)

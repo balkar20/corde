@@ -177,8 +177,11 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         if (_isTopRootExecuting)
             return processor.DependentProcessorsExecutingCount;
 
-        if (processor.RootProcessorFromDependentQueue != null)
-            return processor.RootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
+
+        var rootProcessorFromDependentQueue = processor.RootProcessorFromDependentQueue;
+        if (rootProcessorFromDependentQueue != null)
+            return (rootProcessorFromDependentQueue.DependedProcessors.Count == 0 &&
+            rootProcessorFromDependentQueue.IsCompletedSelfProcessing) ? 0 : rootProcessorFromDependentQueue.DependentProcessorsExecutingCount;
         return 0;
     }
 
@@ -194,7 +197,8 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
     
     private async Task SubscribeForCurrentLevelExecution(IProcessor<TInput> rootProcessor, int acquireId, string executionName)
     {
-        if (_isTopRootExecuting || rootProcessor.RootProcessorFromDependentQueue != null)
+        // if (_isTopRootExecuting || rootProcessor.RootProcessorFromDependentQueue != null)
+        if (_isTopRootExecuting)
         {
             rootProcessor.SomeOfNestedRootsProcessingCompletedEvent  +=  async () => 
                 await LogAndRelease(acquireId, rootProcessor, executionName, true);
