@@ -16,7 +16,7 @@ public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<str
     IMapper mapper,
     IEventLoggingService loggingService, 
     string processorName)
-    : Processor<Track, VehicleDangerProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleDangerProcessionResult>(loggingService, processorName)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {

@@ -16,7 +16,7 @@ public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<str
     IMapper mapper,
     IEventLoggingService loggingService, 
     string processorName)
-    : Processor<Track, VehicleSeasonProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleSeasonProcessionResult>(loggingService, processorName)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)

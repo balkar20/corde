@@ -16,7 +16,7 @@ public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<st
     IMapper mapper,
     IEventLoggingService loggingService, 
     string processorName)
-    : Processor<Track, VehicleTrafficProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleTrafficProcessionResult>(loggingService, processorName)
 {
     
     // public VehicleTrafficProcessor(ISharedMemoryVehicleService sharedMemoryService,

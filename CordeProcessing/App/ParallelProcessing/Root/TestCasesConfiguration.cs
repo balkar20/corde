@@ -106,8 +106,8 @@ public class TestCasesConfiguration
         string[] newNames2 = {"Koko", "Mila", "Oni"};
         var deps = GetTemplateProcessorsWithNames(newNames, loggerService, _context);
         var dep2 = GetTemplateProcessorsWithNames(newNames2, loggerService, _context);
-        var depsQueue = new ConcurrentQueue<IProcessor<Track>>(deps);
-        var depsQueue2 = new ConcurrentQueue<IProcessor<Track>>(dep2);
+        var depsQueue = new ConcurrentQueue<IProgressiveProcessor<Track>>(deps);
+        var depsQueue2 = new ConcurrentQueue<IProgressiveProcessor<Track>>(dep2);
         // newProc2.SetDependents(depsQueue);
 
         applicationConfiguration.MaxParallelConsumeCount = _context.VehicleRootProcessor.TotalAmountOfProcessors;

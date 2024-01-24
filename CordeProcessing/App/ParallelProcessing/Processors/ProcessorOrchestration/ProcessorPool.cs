@@ -28,7 +28,7 @@ public class ProcessorPool<Track>
     {
         ApplicationConfiguration = applicationConfiguration;
     }
-    private IProcessor<Track> ReadyRootProcessor;
+    private IProgressiveProcessor<Track> ReadyRootProcessor;
     private ObjectPool<TrafficProcessingContext> Pool;
     private TrafficProcessingContext _currentProcessingContext;
     private Action _reconstruct;

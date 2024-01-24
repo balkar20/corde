@@ -6,10 +6,10 @@ namespace Common.Contexts;
 
 public class ProcessingContext
 {
-    public Mock<IProcessor<Track>> VehicleTypeProcessor { get; }
-    public Mock<IProcessor<Track>> ColorProcessor { get; }
-    public Mock<IProcessor<Track>> SeasonProcessor { get; }
-    public Mock<IProcessor<Track>> MarkProcessor { get; }
-    public Mock<IProcessor<Track>> TrafficProcessor { get; }
-    public Mock<IProcessor<Track>> DangerProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> VehicleTypeProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> ColorProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> SeasonProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> MarkProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> TrafficProcessor { get; }
+    public Mock<IProgressiveProcessor<Track>> DangerProcessor { get; }
 }

@@ -17,7 +17,7 @@ public class VehicleMarkProcessor
         IMapper mapper,
         IEventLoggingService loggingService, 
         string processorName)
-    : Processor<Track, VehicleMarkProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleMarkProcessionResult>(loggingService, processorName)
 {
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {

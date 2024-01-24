@@ -16,7 +16,7 @@ public class VehicleColorProcessor(IProcessingItemsStorageServiceRepository<stri
         IMapper mapper,
         IEventLoggingService loggingService, 
         string processorName)
-    : Processor<Track, VehicleColorProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleColorProcessionResult>(loggingService, processorName)
 {
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)

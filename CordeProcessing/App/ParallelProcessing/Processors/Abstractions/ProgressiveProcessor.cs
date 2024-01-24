@@ -7,10 +7,10 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors.Abstractions;
 
-public abstract class Processor<TInput, TProcessionResult>(
+public abstract class ProgressiveProcessor<TInput, TProcessionResult>(
     IEventLoggingService? loggingService,
     string processorName)
-    : IProcessor<TInput>
+    : IProgressiveProcessor<TInput>
     where TInput : ApplicationItem<string>
     where TProcessionResult : IProcessionResult
 {
@@ -24,13 +24,13 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     #region Public Properties
 
-    public ConcurrentStack<IProcessor<TInput>> ProcessorsExecuting { get; set; } = new();
+    public ConcurrentStack<IProgressiveProcessor<TInput>> ProcessorsExecuting { get; set; } = new();
 
      public SemaphoreSlim SemaphoreSlim { get; } = new (1, 1);
 
     public int DependentProcessorsExecutingCount { get; set; }
 
-    public ConcurrentQueue<IProcessor<TInput>> DependedProcessors { get; set; } = new();
+    public ConcurrentQueue<IProgressiveProcessor<TInput>> DependedProcessors { get; set; } = new();
     
     public bool IsRoot { get; set; }
     
@@ -52,10 +52,10 @@ public abstract class Processor<TInput, TProcessionResult>(
     
     public bool GotDependentProcessorsExecutingCountFromDependentRoot { get; set; }
     
-    public IProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
-    public IProcessor<TInput>? ParentProcessor { get; set; }
+    public IProgressiveProcessor<TInput>? RootProcessorFromDependentQueue { get; set; }
+    public IProgressiveProcessor<TInput>? ParentProcessor { get; set; }
     
-    public ConcurrentQueue<IProcessor<TInput>>? RootsFromDependantQueuePool { get; } = new ();
+    public ConcurrentQueue<IProgressiveProcessor<TInput>>? RootsFromDependantQueuePool { get; } = new ();
 
     #endregion
 
@@ -117,7 +117,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         }
     }
 
-    public void AddDependentProcessor(IProcessor<TInput> dependentProcessor)
+    public void AddDependentProcessor(IProgressiveProcessor<TInput> dependentProcessor)
     {
         ProcessorTypeName = this.GetType().FullName;
         dependentProcessor.ProcessorTypeName = dependentProcessor.GetType().FullName;
@@ -139,7 +139,7 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     public event Func<TInput, Task>? ParentProcessingCompletedEvent;
 
-    public int IncrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor)
+    public int IncrementParentsTotalCount(int count, IProgressiveProcessor<TInput> parentProcessor)
     {
         if (parentProcessor != null)
         {
@@ -150,7 +150,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         return TotalAmountOfProcessors;
     }
 
-    public int DecrementParentsTotalCount(int count, IProcessor<TInput> parentProcessor)
+    public int DecrementParentsTotalCount(int count, IProgressiveProcessor<TInput> parentProcessor)
     {
 
         if (parentProcessor != null)
@@ -165,7 +165,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         return TotalAmountOfProcessors;
     }
     
-    public void SetDependents(ConcurrentQueue<IProcessor<TInput>> dependents)
+    public void SetDependents(ConcurrentQueue<IProgressiveProcessor<TInput>> dependents)
     {
         this.IsRoot = true;
         DependedProcessors = dependents;
@@ -200,7 +200,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         }
     }
     
-    public void RecursivelySetRootProcessorForDependentQueueToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
+    public void RecursivelySetRootProcessorForDependentQueueToParent(IProgressiveProcessor<TInput> processor, IProgressiveProcessor<TInput> parentProcessor)
     {
         if (processor.IsRoot && parentProcessor == null)
         {
@@ -218,7 +218,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         }
     }
     
-    public void RecursivelySetRootProcessorForDependentQueuePoolToParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
+    public void RecursivelySetRootProcessorForDependentQueuePoolToParent(IProgressiveProcessor<TInput> processor, IProgressiveProcessor<TInput> parentProcessor)
     {
         if (processor.IsRoot && parentProcessor == null)
         {
@@ -238,7 +238,7 @@ public abstract class Processor<TInput, TProcessionResult>(
         }
     }
     
-    public void RecursivelySubscribeRootProcessorCompletedEventParent(IProcessor<TInput> processor, IProcessor<TInput> parentProcessor)
+    public void RecursivelySubscribeRootProcessorCompletedEventParent(IProgressiveProcessor<TInput> processor, IProgressiveProcessor<TInput> parentProcessor)
     {
         if (processor.IsRoot && parentProcessor == null)
         {
@@ -344,9 +344,9 @@ public abstract class Processor<TInput, TProcessionResult>(
     }
 
 
-    private IProcessor<TInput>? GetNextProcessorFromDependants()
+    private IProgressiveProcessor<TInput>? GetNextProcessorFromDependants()
     {
-        DependedProcessors.TryDequeue(out IProcessor<TInput>? proc);
+        DependedProcessors.TryDequeue(out IProgressiveProcessor<TInput>? proc);
         
         return proc;
     }
@@ -396,7 +396,7 @@ public abstract class Processor<TInput, TProcessionResult>(
 
     #region Event Handlers
 
-    private async Task ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler(IProcessor<TInput> processor)
+    private async Task ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler(IProgressiveProcessor<TInput> processor)
     {
         await LoggingService.Log(
             $"ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler on {this.ProcessorTypeName}",

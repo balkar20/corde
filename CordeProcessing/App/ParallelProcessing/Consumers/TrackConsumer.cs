@@ -12,7 +12,7 @@ namespace ParallelProcessing.Consumers;
 public class TrackConsumer : ITrackConsumer
 {
     public SortedSet<int> Treads { get; set; }
-    private IProcessor<Track> _rootProcessor;
+    private IProgressiveProcessor<Track> _rootProcessor;
     private TrafficProcessingContext _context;
     private ApplicationConfiguration _config;
     private Func<TrafficProcessingContext> ConfigureDependentProcessors;

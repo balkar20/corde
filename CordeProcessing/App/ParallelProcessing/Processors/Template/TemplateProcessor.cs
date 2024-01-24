@@ -10,7 +10,7 @@ public class TemplateProcessor<TInput, TProcessionResult>(
     IEventLoggingService? loggingService,
     string processorName,
     Func<TInput, Task<TProcessionResult>> processLogic)
-    : Processor<TInput, TProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<TInput, TProcessionResult>(loggingService, processorName)
     where TInput : ApplicationItem<string>
     where TProcessionResult : IProcessionResult
 {

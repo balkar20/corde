@@ -18,12 +18,12 @@ public class TrafficProcessingContext(ApplicationConfiguration applicationConfig
 
     #region Processors
 
-    public IProcessor<Track> VehicleRootProcessor { get; set; }
-    public IProcessor<Track> VehicleMarkProcessor { get; set; }
-    public IProcessor<Track> VehicleColorProcessor { get; set; }
-    public IProcessor<Track> VehicleSeasonProcessor { get; set; }
-    public IProcessor<Track> VehicleDangerProcessor { get; set; }
-    public IProcessor<Track> VehicleTrafficProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleRootProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleMarkProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleColorProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleSeasonProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleDangerProcessor { get; set; }
+    public IProgressiveProcessor<Track> VehicleTrafficProcessor { get; set; }
 
     #endregion
 

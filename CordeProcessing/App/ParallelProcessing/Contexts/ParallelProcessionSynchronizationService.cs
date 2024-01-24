@@ -31,7 +31,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
     
     #region Public Methods
 
-    public async Task WaitLockWithCallback(IProcessor<TInput> rootProcessor, Func< TInput, Task> callback, TInput input)
+    public async Task WaitLockWithCallback(IProgressiveProcessor<TInput> rootProcessor, Func< TInput, Task> callback, TInput input)
     {
         var (executionName, acquireId) = await AcquireAndLog(rootProcessor);
         
@@ -96,7 +96,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
     
     #region Private Methods
     
-    private async Task CheckAndHandleCompletion(IProcessor<TInput> rootProcessor)
+    private async Task CheckAndHandleCompletion(IProgressiveProcessor<TInput> rootProcessor)
     {
         if (_counter == 0 && rootProcessor.DependedProcessors.Count == 0 && !_completionWasFired)
         {
@@ -105,7 +105,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         }
     }
     
-    private async Task<(string, int)> AcquireAndLog(IProcessor<TInput> processor)
+    private async Task<(string, int)> AcquireAndLog(IProgressiveProcessor<TInput> processor)
     {
         _counter++;
         await SemaphoreSlim.WaitAsync();
@@ -123,7 +123,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         return (dependantProcessorTypeName, acquireId);
     }
     
-    private async Task LogAndRelease(int acquireId, IProcessor<TInput> processor, string executionName, bool isExecutesAfterRelease = false)
+    private async Task LogAndRelease(int acquireId, IProgressiveProcessor<TInput> processor, string executionName, bool isExecutesAfterRelease = false)
     {
         var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
         var bufList =  processor.DependedProcessors.ToList();
@@ -148,12 +148,12 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         _counter--;
     }
     
-    private string GetElementNames(List<IProcessor<TInput>> list)
+    private string GetElementNames(List<IProgressiveProcessor<TInput>> list)
     {
         return string.Join(", ", list.Select(obj => obj.ProcessorTypeName));
     }
 
-    private bool CheckIsNeedToKeepLockedUntilDependentRootReleased(IProcessor<TInput> processor, bool isFromRootDependant)
+    private bool CheckIsNeedToKeepLockedUntilDependentRootReleased(IProgressiveProcessor<TInput> processor, bool isFromRootDependant)
     {
         var dependentProcessorExists = processor.DependedProcessors.TryPeek(out var dependantProcessor);
         var dependentsCount = processor.DependedProcessors.Count;
@@ -172,7 +172,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         return isNeedToKeepLockedUntilDependentRootReleased;
     }
 
-    private int GetDependantExecutingCount(IProcessor<TInput> processor)
+    private int GetDependantExecutingCount(IProgressiveProcessor<TInput> processor)
     {
         if (_isTopRootExecuting)
             return processor.DependentProcessorsExecutingCount;
@@ -185,7 +185,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         return 0;
     }
 
-    private int  DecrementDependantExecutingCount(IProcessor<TInput> processor)
+    private int  DecrementDependantExecutingCount(IProgressiveProcessor<TInput> processor)
     {
         if (_isTopRootExecuting)
             return --processor.DependentProcessorsExecutingCount;
@@ -195,7 +195,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         return 0;
     }
     
-    private async Task SubscribeForCurrentLevelExecution(IProcessor<TInput> rootProcessor, int acquireId, string executionName)
+    private async Task SubscribeForCurrentLevelExecution(IProgressiveProcessor<TInput> rootProcessor, int acquireId, string executionName)
     {
         // if (_isTopRootExecuting || rootProcessor.RootProcessorFromDependentQueue != null)
         if (_isTopRootExecuting)
