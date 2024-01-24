@@ -12,13 +12,28 @@ using ParallelProcessing.Services.Events.Data.Enums;
 namespace ParallelProcessing.Processors;
 
 public class VehicleTypeProcessor
-    (IProcessingItemsStorageServiceRepository<string, Track, VehicleTypeProcessionResult> processingItemsStorageServiceRepository,
-    IAnalyzerService analyzerService,
-    IMapper mapper,
-    IEventLoggingService loggingService, 
-    string processorName)
-    : ProgressiveProcessor<Track, VehicleTypeProcessionResult>(loggingService, processorName)
+    : ProgressiveProcessor<Track, VehicleTypeProcessionResult>
 {
+
+    
+    private readonly IProcessingItemsStorageServiceRepository<string, Track, VehicleTypeProcessionResult> processingItemsStorageServiceRepository;
+    private readonly IAnalyzerService analyzerService;
+    private readonly IMapper mapper;
+    private readonly IEventLoggingService loggingService;
+    private readonly string processorName;
+    public VehicleTypeProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTypeProcessionResult> processingItemsStorageServiceRepository,
+        IAnalyzerService analyzerService,
+        IMapper mapper,
+        IEventLoggingService loggingService, 
+        string processorName)
+        : base(loggingService, processorName)
+    {
+        this.processingItemsStorageServiceRepository = processingItemsStorageServiceRepository;
+        this.analyzerService = analyzerService;
+        this.mapper = mapper;
+        this.loggingService = loggingService;
+        this.processorName = processorName;
+    }
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
         //But what if roots a lot?

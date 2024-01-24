@@ -11,13 +11,27 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors;
 
-public class VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult> processingItemsStorageServiceRepository,
-    IAnalyzerService analyzerService,
-    IMapper mapper,
-    IEventLoggingService loggingService, 
-    string processorName)
-    : ProgressiveProcessor<Track, VehicleDangerProcessionResult>(loggingService, processorName)
+public class VehicleDangerProcessor
+    : ProgressiveProcessor<Track, VehicleDangerProcessionResult>
 {
+    private readonly IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult> processingItemsStorageServiceRepository;
+    private readonly IAnalyzerService analyzerService;
+    private readonly IMapper mapper;
+    private readonly IEventLoggingService loggingService;
+    private readonly string processorName;
+    public VehicleDangerProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleDangerProcessionResult> processingItemsStorageServiceRepository,
+        IAnalyzerService analyzerService,
+        IMapper mapper,
+        IEventLoggingService loggingService, 
+        string processorName)
+        : base(loggingService, processorName)
+    {
+        this.processingItemsStorageServiceRepository = processingItemsStorageServiceRepository;
+        this.analyzerService = analyzerService;
+        this.mapper = mapper;
+        this.loggingService = loggingService;
+        this.processorName = processorName;
+    }
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
         // var vehicles = await _sharedMemoryService.ProcessingItemsStorageService.G(inputData.ItemId);

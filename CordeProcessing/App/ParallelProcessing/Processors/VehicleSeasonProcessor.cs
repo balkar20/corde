@@ -11,13 +11,27 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors;
 
-public class VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleSeasonProcessionResult> processingItemsStorageServiceRepository,
-    IAnalyzerService analyzerService,
-    IMapper mapper,
-    IEventLoggingService loggingService, 
-    string processorName)
-    : ProgressiveProcessor<Track, VehicleSeasonProcessionResult>(loggingService, processorName)
+public class VehicleSeasonProcessor: ProgressiveProcessor<Track, VehicleSeasonProcessionResult>
 {
+
+    private readonly IProcessingItemsStorageServiceRepository<string, Track, VehicleSeasonProcessionResult> processingItemsStorageServiceRepository;
+    private readonly IAnalyzerService analyzerService;
+    private readonly IMapper mapper;
+    private readonly IEventLoggingService loggingService;
+    private readonly string processorName;
+    public VehicleSeasonProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleSeasonProcessionResult> processingItemsStorageServiceRepository,
+        IAnalyzerService analyzerService,
+        IMapper mapper,
+        IEventLoggingService loggingService, 
+        string processorName)
+        : base(loggingService, processorName)
+    {
+        this.processingItemsStorageServiceRepository = processingItemsStorageServiceRepository;
+        this.analyzerService = analyzerService;
+        this.mapper = mapper;
+        this.loggingService = loggingService;
+        this.processorName = processorName;
+    }
 
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {

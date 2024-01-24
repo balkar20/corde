@@ -6,9 +6,13 @@ using ParallelProcessing.Services.Analysers.Abstractions;
 
 namespace ParallelProcessing.Services.Analysers.Services;
 
-class TrafficAnalyzerService(VehicleTrafficAnalyseConfig vehicleTrafficAnalyseConfig) : IAnalyzerService
+class TrafficAnalyzerService : IAnalyzerService
 {
-    private  TimeSpan timeForAnalyse = vehicleTrafficAnalyseConfig.TimeForAnalyse;
+    public TrafficAnalyzerService(VehicleTrafficAnalyseConfig vehicleTypeAnalyseConfig)
+    {
+        this.timeForAnalyse = vehicleTypeAnalyseConfig.TimeForAnalyse;
+    }
+    private  TimeSpan timeForAnalyse;
 
     public async Task<IAnalysingResult> Analyse(AnalysingItem analysingItem)
     {

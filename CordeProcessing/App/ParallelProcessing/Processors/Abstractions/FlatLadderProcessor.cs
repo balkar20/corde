@@ -7,18 +7,24 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors.Abstractions;
 
-public abstract class FlatLadderProcessor<TInput, TProcessionResult>(
-    IEventLoggingService? loggingService,
-    string processorName)
+public abstract class FlatLadderProcessor<TInput, TProcessionResult>
     : IFlatLadderProcessor<TInput>
     where TInput : ApplicationItem<string>
     where TProcessionResult : IProcessionResult
 {
+    public FlatLadderProcessor(
+        IEventLoggingService? loggingService,
+        string processorName)
+    {
+        this.LoggingService = loggingService;
+        this.ProcessorName = processorName;
+        _parallelProcessionSynchronizationService = new(loggingService);
+    }
     #region private fields
 
-    private readonly IEventLoggingService? LoggingService = loggingService;
+    private readonly IEventLoggingService? LoggingService;
 
-    private readonly FlatLadderParallelProcessionSynchronizationService<TInput> _parallelProcessionSynchronizationService = new(loggingService);
+    private readonly FlatLadderParallelProcessionSynchronizationService<TInput> _parallelProcessionSynchronizationService;
 
     #endregion
 
@@ -35,7 +41,7 @@ public abstract class FlatLadderProcessor<TInput, TProcessionResult>(
     public int TotalAmountOfProcessors { get; set; } = 1;
 
     public string ProcessorTypeName { get; set; }
-    public string ProcessorName { get; set; } = processorName;
+    public string ProcessorName { get; set; }
 
     public bool IsCompletedNestedProcessing { get; set; }
     public bool IsCompletedCurrentProcessing { get; set; }

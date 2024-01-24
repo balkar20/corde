@@ -7,18 +7,26 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors.Abstractions;
 
-public abstract class ProgressiveProcessor<TInput, TProcessionResult>(
-    IEventLoggingService? loggingService,
-    string processorName)
+public abstract class ProgressiveProcessor<TInput, TProcessionResult>
     : IProgressiveProcessor<TInput>
     where TInput : ApplicationItem<string>
     where TProcessionResult : IProcessionResult
 {
+    public ProgressiveProcessor(
+        IEventLoggingService? loggingService,
+        string processorName)
+    {
+        this.loggingService = loggingService;
+        this.ProcessorName = processorName;
+        _parallelProcessionSynchronizationService = new(loggingService);
+    }
     #region private fields
 
-    private readonly IEventLoggingService? LoggingService = loggingService;
+    protected readonly IEventLoggingService? loggingService;
+    public  string ProcessorName {get;set;}
 
-    private readonly ParallelProcessionSynchronizationService<TInput> _parallelProcessionSynchronizationService = new(loggingService);
+
+    private readonly ParallelProcessionSynchronizationService<TInput> _parallelProcessionSynchronizationService;
 
     #endregion
 
@@ -39,7 +47,6 @@ public abstract class ProgressiveProcessor<TInput, TProcessionResult>(
     public int TotalAmountOfProcessors { get; set; } = 1;
 
     public string ProcessorTypeName { get; set; }
-    public string ProcessorName { get; set; } = processorName;
 
     public bool IsCompletedNestedProcessing { get;  }
 
@@ -398,7 +405,7 @@ public abstract class ProgressiveProcessor<TInput, TProcessionResult>(
 
     private async Task ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler(IProgressiveProcessor<TInput> processor)
     {
-        await LoggingService.Log(
+        await loggingService.Log(
             $"ProcessorFromDependentQueOnCurrentProcessingCompletedEventHandler on {this.ProcessorTypeName}",
             EventLoggingTypes.HandlingEvent, processor.ProcessorTypeName);
     }

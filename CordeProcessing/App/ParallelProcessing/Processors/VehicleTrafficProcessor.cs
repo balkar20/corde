@@ -11,24 +11,31 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors;
 
-public class VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository,
-    IAnalyzerService analyzerService,
-    IMapper mapper,
-    IEventLoggingService loggingService, 
-    string processorName)
-    : ProgressiveProcessor<Track, VehicleTrafficProcessionResult>(loggingService, processorName)
+public class VehicleTrafficProcessor : ProgressiveProcessor<Track, VehicleTrafficProcessionResult>
 {
-    
-    // public VehicleTrafficProcessor(ISharedMemoryVehicleService sharedMemoryService,
-    //     IVehicleAnalyzerService<IAnalysingResult> vehicleAnalyzerService, 
-    //     IMapper mapper) : 
-    //     base(sharedMemoryService, vehicleAnalyzerService, mapper)
-    // {
-    // }
+    private readonly IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository;
+    private readonly IAnalyzerService analyzerService;
+    private readonly IMapper mapper;
+    private readonly IEventLoggingService loggingService;
+    private readonly string processorName;
+
+    public VehicleTrafficProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleTrafficProcessionResult> processingItemsStorageServiceRepository,
+        IAnalyzerService analyzerService,
+        IMapper mapper,
+        IEventLoggingService loggingService, 
+        string processorName): base (loggingService, processorName)
+    {
+        this.processingItemsStorageServiceRepository = processingItemsStorageServiceRepository;
+        this.analyzerService = analyzerService;
+        this.mapper = mapper;
+        this.loggingService = loggingService;
+        this.processorName = processorName;
+    }
+
 
     #region Protected Methods
 
-     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
+    protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
         {
             var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);
             var typeAnaliseResult = await analyzerService.Analyse(analysingItem);

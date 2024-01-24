@@ -6,14 +6,20 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors.Template;
 
-public class TemplateProcessor<TInput, TProcessionResult>(
-    IEventLoggingService? loggingService,
-    string processorName,
-    Func<TInput, Task<TProcessionResult>> processLogic)
-    : ProgressiveProcessor<TInput, TProcessionResult>(loggingService, processorName)
+public class TemplateProcessor<TInput, TProcessionResult>
+    : ProgressiveProcessor<TInput, TProcessionResult>
     where TInput : ApplicationItem<string>
     where TProcessionResult : IProcessionResult
 {
+    private readonly Func<TInput, Task<TProcessionResult>> processLogic;
+    public TemplateProcessor(
+        IEventLoggingService? loggingService,
+        string processorName,
+        Func<TInput, Task<TProcessionResult>> processLogic)
+        : base(loggingService, processorName)
+    {
+        this.processLogic = processLogic;
+    }
     protected override async Task<IProcessionResult> ProcessLogic(TInput inputData)
     {
         var result =  await processLogic(inputData);

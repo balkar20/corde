@@ -4,8 +4,14 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Contexts;
 
-public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingService? loggingService)
+public class ParallelProcessionSynchronizationService<TInput>
 {
+    public ParallelProcessionSynchronizationService(IEventLoggingService loggingService)
+    {
+        this.loggingService = loggingService;
+    }
+
+     private readonly IEventLoggingService loggingService;
     #region Constants
 
     const string HimselfLabel = "Himself";
@@ -140,9 +146,7 @@ public class ParallelProcessionSynchronizationService<TInput>(IEventLoggingServi
         {
             dependantProcessorTypeName = HimselfLabel;
         }
-        await loggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ? 
-            dependantProcessorTypeName : 
-            HimselfLabel)} {executingAfterReleaseMessage}" , EventLoggingTypes.SemaphoreReleased, executionName); 
+        await loggingService.Log($"Id = {acquireId}, ReleaseTime{DateTime.Now}, Name = {processor.ProcessorName}, TypeName = {processor.ProcessorTypeName} , for {(dependentProcessorExists ?  dependantProcessorTypeName :  HimselfLabel)} {executingAfterReleaseMessage}" , EventLoggingTypes.SemaphoreReleased, executionName); 
 
         SemaphoreSlim.Release();
         _counter--;

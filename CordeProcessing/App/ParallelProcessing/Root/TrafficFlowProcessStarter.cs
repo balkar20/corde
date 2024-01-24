@@ -7,12 +7,23 @@ using ParallelProcessing.Producers.Abstraction;
 
 namespace ParallelProcessing.Root;
 
-public class TrafficFlowProcessStarter(
-    ITrackDevice trackDevice,
-    ITrackProducer trackProducer,
-    ITrackConsumer trackConsumer, 
-    ApplicationConfiguration configuration)
+public class TrafficFlowProcessStarter
 {
+    private readonly ITrackDevice trackDevice;
+    private readonly ITrackProducer trackProducer;
+    private readonly ITrackConsumer trackConsumer;
+    private readonly ApplicationConfiguration configuration;
+    public TrafficFlowProcessStarter(
+        ITrackDevice trackDevice,
+        ITrackProducer trackProducer,
+        ITrackConsumer trackConsumer, 
+        ApplicationConfiguration configuration)
+    {
+        this.trackDevice = trackDevice;
+        this.trackProducer = trackProducer;
+        this.trackConsumer = trackConsumer;
+        this.configuration = configuration;
+    }
     protected TimeSpan consumeSpeed => configuration.ConsumeSpeed;
     private  int maxParallelConsume => configuration.MaxParallelConsumeCount;
 

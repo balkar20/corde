@@ -12,8 +12,14 @@ using ParallelProcessing.Services.Storage.Services;
 
 namespace ParallelProcessing.Contexts;
 
-public class TrafficProcessingContext(ApplicationConfiguration applicationConfiguration)
+public class TrafficProcessingContext
 {
+    public TrafficProcessingContext(ApplicationConfiguration applicationConfiguration)
+    {
+        this.applicationConfiguration = applicationConfiguration;
+    }
+    private readonly ApplicationConfiguration applicationConfiguration;
+
     public  IEventLoggingService EventLogger{ get; private set; }
 
     #region Processors

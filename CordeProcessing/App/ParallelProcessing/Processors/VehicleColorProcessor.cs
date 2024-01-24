@@ -11,14 +11,27 @@ using ParallelProcessing.Services.Events.Data.Enums;
 
 namespace ParallelProcessing.Processors;
 
-public class VehicleColorProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult> processingItemsStorageServiceRepository,
+public class VehicleColorProcessor
+    : ProgressiveProcessor<Track, VehicleColorProcessionResult>
+{
+    private readonly IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult> processingItemsStorageServiceRepository;
+    private readonly IAnalyzerService analyzerService;
+    private readonly IMapper mapper;
+    private readonly IEventLoggingService loggingService;
+    private readonly string processorName;
+    public VehicleColorProcessor(IProcessingItemsStorageServiceRepository<string, Track, VehicleColorProcessionResult> processingItemsStorageServiceRepository,
         IAnalyzerService analyzerService,
         IMapper mapper,
         IEventLoggingService loggingService, 
         string processorName)
-    : ProgressiveProcessor<Track, VehicleColorProcessionResult>(loggingService, processorName)
-{
-
+        : base(loggingService, processorName)
+    {
+        this.processingItemsStorageServiceRepository = processingItemsStorageServiceRepository;
+        this.analyzerService = analyzerService;
+        this.mapper = mapper;
+        this.loggingService = loggingService;
+        this.processorName = processorName;
+    }
     protected override async Task<IProcessionResult> ProcessLogic(Track inputData)
     {
         var analysingItem = mapper.Map<TypeAnalysingItem>(inputData);

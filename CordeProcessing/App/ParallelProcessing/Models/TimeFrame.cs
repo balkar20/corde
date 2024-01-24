@@ -3,19 +3,19 @@ namespace ParallelProcessing.Models;
 public struct TimeFrame
 {
 
-    public State TimePerriodState { get; private set; }
-    public RelativeTime RelativeTimePeriod { get; private set; }
-    public int UnitsOfTime { get; private set; }
+    public State TimePerriodState { get;  set; }
+    // public RelativeTime RelativeTimePeriod { get;  set; }
+    // public int UnitsOfTime { get;  set; }
 
-    public DateTime? StartTime { get; private set; }
-    public DateTime? EndTime { get; private set; }
+    public DateTime? StartTime { get;  set; }
+    public DateTime? EndTime { get;  set; }
 
-    public TimeFrame(RelativeTime relativeTime, int unitsOfTime)
-    {
-        TimePerriodState = State.Absolute;
-        RelativeTimePeriod = relativeTime;
-        UnitsOfTime = unitsOfTime;
-    }
+    // public TimeFrame(RelativeTime relativeTime, int unitsOfTime)
+    // {
+    //     TimePerriodState = State.Absolute;
+    //     RelativeTimePeriod = relativeTime;
+    //     UnitsOfTime = unitsOfTime;
+    // }
 
     public TimeFrame(DateTime startTime, DateTime endTime)
     {
